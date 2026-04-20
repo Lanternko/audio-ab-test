@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tonewright · Audio A/B Blind Listening Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&family=Inter+Tight:wght@400;500;600&family=Noto+Serif+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="runner.css" />
+  <link rel="stylesheet" href="overview.css" />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="data.js"></script>
+  <script type="text/babel" src="runner.jsx"></script>
+  <script type="text/babel" src="overview.jsx"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Schema v2: added participant, startedAt; switched to CMOS 7-point with two metrics per question.
+    const STORAGE_KEY = "tonewright-state-v2";
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.dataKey === DATA.project) return parsed;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function Welcome({ state, setState, setView }) {
+      const [name, setName] = useState(state.participant || "");
+      const start = () => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        setState({
+          participant: trimmed,
+          startedAt: new Date().toISOString(),
+          currentIdx: 0,
+          answers: {},
+          revealed: false,
+        });
+        setView("runner");
+      };
+      return (
+        <div className="canvas welcome-canvas">
+          <div className="welcome-card">
+            <div className="eyebrow">{DATA.projectLabel} · Audio A/B Blind Test</div>
+            <h1>Welcome to <em>Tonewright</em></h1>
+            <p>
+              You will listen to <strong>{DATA.totalQuestions}</strong> pairs of audio clips labelled
+              <strong> A</strong> and <strong> B</strong>. For each pair, rate two dimensions on a
+              <strong> 7-point CMOS scale (−3 … +3)</strong>:
+            </p>
+            <ul>
+              <li><strong>Audio Quality</strong> — overall perceptual quality: artefacts, clarity, fidelity.</li>
+              <li><strong>Prompt Following</strong> — how faithfully each clip matches the written prompt shown above the players.</li>
+            </ul>
+            <p>
+              A and B identities are hidden during the test. After the last question, the true labels are revealed
+              and you export a JSON log to hand back to the coordinator.
+            </p>
+            <label htmlFor="participant-name">Your name</label>
+            <input
+              id="participant-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") start(); }}
+              placeholder="e.g. Alice Chen"
+              autoFocus
+            />
+            <button
+              className="btn btn-primary welcome-start"
+              disabled={!name.trim()}
+              onClick={start}
+            >
+              Start listening →
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const initial = loadState() || {};
+      const [view, setView] = useState(initial.view || "runner");
+      const [state, setState] = useState({
+        participant: initial.participant || "",
+        startedAt: initial.startedAt || null,
+        currentIdx: initial.currentIdx || 0,
+        answers: initial.answers || {},
+        revealed: initial.revealed || false,
+      });
+
+      useEffect(() => {
+        const payload = {
+          view,
+          participant: state.participant,
+          startedAt: state.startedAt,
+          currentIdx: state.currentIdx,
+          answers: state.answers,
+          revealed: state.revealed,
+          dataKey: DATA.project,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }, [view, state]);
+
+      const goto = (v) => { setView(v); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+      // Welcome screen shown whenever participant name is empty
+      if (!state.participant) {
+        return (
+          <div className="app">
+            <div className="topbar">
+              <div className="topbar-inner">
+                <div className="brand">
+                  <span className="brand-dot" />
+                  Tonewright
+                  <span className="sub">{DATA.projectLabel}</span>
+                </div>
+              </div>
+            </div>
+            <Welcome state={state} setState={setState} setView={setView} />
+          </div>
+        );
+      }
+
+      return (
+        <div className="app">
+          <div className="topbar">
+            <div className="topbar-inner">
+              <div className="brand">
+                <span className="brand-dot" />
+                Tonewright
+                <span className="sub">{DATA.projectLabel} · <span className="participant-chip">{state.participant}</span></span>
+              </div>
+              <div className="nav">
+                <button className={view === "runner" ? "active" : ""} onClick={() => goto("runner")}>Evaluate</button>
+                <button className={view === "overview" ? "active" : ""} onClick={() => goto("overview")}>Overview</button>
+                <button className={view === "results" ? "active" : ""} onClick={() => goto("results")}>Results</button>
+              </div>
+            </div>
+          </div>
+
+          {view === "runner"   && <Runner   state={state} setState={setState} goto={goto} />}
+          {view === "overview" && <Overview state={state} setState={setState} goto={goto} />}
+          {view === "results"  && <Results  state={state} setState={setState} goto={goto} />}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
