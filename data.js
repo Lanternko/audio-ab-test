@@ -60,7 +60,7 @@ const POOL = [
 const DATA = {
   appName: APP_NAME,
   project: "audio_ab_test_p7v1_vs_p8v1",
-  projectLabel: "P7v1 vs P8v1",
+  projectLabel: "Q vs NQ",
   variants: ["p7v1", "p8v1"],
   roundSize: 8,
   pool: POOL,
