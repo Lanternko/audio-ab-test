@@ -22,11 +22,28 @@ Then open <http://localhost:8000/>.
 ## Workflow
 
 1. Each participant enters their name on the welcome screen.
-2. For each of 10 questions they listen to blind samples **A** and **B**, then rate:
+2. For each of the 8 questions they listen to blind samples **A** and **B**, then rate:
    - **Audio Quality** (−3 … +3) — overall perceptual quality.
-   - **Prompt Following** (−3 … +3) — faithfulness to the MusicCaps prompt shown above the players.
-3. After the last question, the **Results** page reveals the true identities (`p8` / `p9v1`) and shows weighted-score summaries per metric.
-4. Participant clicks **Export JSON** — a file named like `pairwise_p8_vs_p9v1__Alice_Chen__2026-04-20-08-30-15.json` is downloaded. Hand this back to the coordinator.
+   - **Prompt Following** (−3 … +3) — faithfulness to the prompt shown above the players.
+3. After the last question, the **Results** page reveals the true identities (`p7v1` / `p8v1`) and shows weighted-score summaries per metric.
+4. Participant clicks **Submit to coordinator** — the full log is POSTed to the cloud endpoint (Google Sheets via Apps Script) and state is cleared so the next participant can start.
+   - If `SUBMIT_URL` is not configured, the button falls back to "Export JSON & start new participant" — a file named like `subjective_p7v1_vs_p8v1__Alice_Chen__2026-04-20-08-30-15.json` is downloaded and must be handed back manually.
+   - If an upload fails, a JSON backup is auto-downloaded so the data is never lost.
+
+## Cloud submission setup (Google Apps Script + Sheets)
+
+Five-minute path from zero to live:
+
+1. Create an empty Google Sheet. Copy the URL and note its **ID** — the long string between `/d/` and `/edit`.
+2. In that sheet → **Extensions → Apps Script**. Delete the default `Code.gs` contents, paste [`server/apps-script.gs`](server/apps-script.gs), and set `SHEET_ID` to the ID from step 1.
+3. Save, then **Deploy → New deployment → Web app**:
+   - **Execute as:** Me (your Google account)
+   - **Who has access:** Anyone
+   - Click **Deploy**. Copy the `/exec` URL it gives you.
+4. In [`index.html`](index.html), set `window.SUBMIT_URL = "<paste /exec URL here>"`.
+5. `git commit && git push`. GitHub Pages rebuilds in ~1 minute and every subsequent submission lands as a new row in your sheet.
+
+The Apps Script writes one row per submission with per-question ratings flattened into columns (`q1_aq`, `q1_pf`, …) plus a `fullJSON` column for archival. The header row is created automatically on the first submission.
 
 ## Scale convention
 
@@ -63,9 +80,10 @@ To swap the dataset: replace the files in `audio/`, update the question entries 
 
 ## Files
 
-- `index.html` — App shell + Welcome screen + routing.
+- `index.html` — App shell, Welcome screen, routing, `SUBMIT_URL` config.
 - `data.js` — Dataset, CMOS scale options, metrics definitions, icons.
 - `runner.jsx` — Evaluate screen (audio transport, CMOS scales, ticker).
-- `overview.jsx` — Overview grid + Results screen (per-metric cards + reveal table + JSON export).
+- `overview.jsx` — Overview grid + Results screen (per-metric cards + reveal table + cloud submit + JSON export).
 - `styles.css` / `runner.css` / `overview.css` — styling.
-- `audio/` — FLAC dataset.
+- `audio/` — WAV dataset (peak-normalised to −1 dBFS).
+- `server/apps-script.gs` — Google Apps Script `doPost` receiver (deploy to collect submissions into a Sheet).

@@ -467,6 +467,32 @@
 .meta-card .msg em { font-style: italic; }
 .meta-card .actions { display: flex; gap: 10px; }
 
+.submit-status {
+  grid-column: 1 / -1;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.submit-status-uploading {
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.submit-status-ok {
+  background: var(--success-wash);
+  color: var(--success);
+  border: 1px solid rgba(58, 138, 58, 0.35);
+  font-weight: 500;
+}
+.submit-status-err {
+  background: rgba(168, 54, 75, 0.08);
+  color: var(--error);
+  border: 1px solid rgba(168, 54, 75, 0.35);
+}
+
 @media (max-width: 860px) {
   .overview-grid { grid-template-columns: repeat(2, 1fr); }
   .stats-strip { grid-template-columns: 1fr; }

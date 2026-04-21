@@ -1,6 +1,35 @@
 // Overview + Results screens
 
-const { useEffect: useEffectOV } = React;
+const { useEffect: useEffectOV, useState: useStateOV } = React;
+
+const SCHEMA_VERSION = "v2-cmos7pt-2metrics";
+
+function makeSubmissionId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// POST the payload as text/plain to avoid a CORS preflight — Apps Script
+// web apps handle this correctly while rejecting application/json preflights.
+async function uploadSubmission(payload, url) {
+  const res = await fetch(url, {
+    method: "POST",
+    mode: "cors",
+    redirect: "follow",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+  const raw = await res.text();
+  try {
+    const data = JSON.parse(raw);
+    if (data && data.ok === false) throw new Error(data.error || "server rejected");
+    return data;
+  } catch (_parseErr) {
+    // Non-JSON but 2xx — treat as success
+    return { ok: true, raw };
+  }
+}
 
 function formatVal(val) {
   if (val == null) return "—";
@@ -197,11 +226,15 @@ function Results({ state, setState, goto }) {
     if (!state.revealed) setState(s => ({ ...s, revealed: true }));
   }, []);
 
+  const [submitState, setSubmitState] = useStateOV({ phase: "idle", message: "" });
+
   const variants = [...new Set(DATA.questions.flatMap(q => [q.aLabel, q.bLabel]))].sort();
   const leftL  = variants[0] || "A";
   const rightL = variants[1] || "B";
 
   const answered = Object.values(state.answers).filter(isAnswered).length;
+  const submitUrl = (typeof window !== "undefined" && window.SUBMIT_URL) || "";
+  const hasEndpoint = !!submitUrl;
 
   const buildPayload = () => {
     const now = new Date().toISOString();
@@ -229,12 +262,15 @@ function Results({ state, setState, goto }) {
       };
     });
     return {
+      schemaVersion: SCHEMA_VERSION,
+      submissionId: makeSubmissionId(),
       project: DATA.project,
       projectLabel: DATA.projectLabel,
       variants: [leftL, rightL],
       participant: state.participant,
       startedAt: state.startedAt,
       completedAt: now,
+      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       totalQuestions: DATA.totalQuestions,
       answeredQuestions: answered,
       metrics: METRICS.map(m => m.key),
@@ -244,8 +280,7 @@ function Results({ state, setState, goto }) {
     };
   };
 
-  const exportJSON = () => {
-    const payload = buildPayload();
+  const downloadJSON = (payload) => {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -257,10 +292,38 @@ function Results({ state, setState, goto }) {
     URL.revokeObjectURL(url);
   };
 
-  const submitAndReset = () => {
-    if (!confirm("Export JSON and start a new participant? Current ratings will be cleared.")) return;
-    exportJSON();
-    setState({ participant: "", startedAt: null, currentIdx: 0, answers: {}, revealed: false });
+  const exportJSON = () => downloadJSON(buildPayload());
+
+  const submitAndReset = async () => {
+    const payload = buildPayload();
+
+    // No cloud endpoint → old behavior: export + reset
+    if (!hasEndpoint) {
+      if (!confirm("No cloud endpoint configured. Export JSON and start a new participant?")) return;
+      downloadJSON(payload);
+      setState({ participant: "", startedAt: null, currentIdx: 0, answers: {}, revealed: false });
+      return;
+    }
+
+    if (!confirm(`Submit ratings for "${state.participant}" to the coordinator?`)) return;
+
+    setSubmitState({ phase: "uploading", message: "Uploading…" });
+    try {
+      await uploadSubmission(payload, submitUrl);
+      setSubmitState({ phase: "ok", message: `Submitted · id ${payload.submissionId.slice(0, 8)}` });
+      // Give the user a beat to read the confirmation, then reset for the next participant.
+      setTimeout(() => {
+        setState({ participant: "", startedAt: null, currentIdx: 0, answers: {}, revealed: false });
+      }, 1500);
+    } catch (err) {
+      console.error("Upload failed", err);
+      // Auto-download as backup so the data is never lost.
+      downloadJSON(payload);
+      setSubmitState({
+        phase: "err",
+        message: `Upload failed: ${err.message}. A JSON backup was downloaded — please email it to the coordinator.`,
+      });
+    }
   };
 
   const aqScores = computeScores(state.answers, "audioQuality", leftL, rightL);
@@ -317,13 +380,40 @@ function Results({ state, setState, goto }) {
 
       <div className="meta-card">
         <div className="msg">
-          <strong>Export your rating log.</strong> The JSON contains every per-question rating (audio quality, prompt following),
-          audio filenames, and the true A / B identities. Each participant should export once and hand the file back to the coordinator.
+          {hasEndpoint ? (
+            <>
+              <strong>Submit your ratings.</strong> Clicking <em>Submit</em> uploads the full log
+              (every per-question rating, audio filenames, true A / B identities) directly to the coordinator.
+              If the upload fails, a JSON backup downloads automatically.
+            </>
+          ) : (
+            <>
+              <strong>Export your rating log.</strong> No cloud endpoint is configured for this deployment —
+              please export the JSON and hand the file back to the coordinator.
+            </>
+          )}
         </div>
         <div className="actions">
-          <button className="btn" onClick={exportJSON}>Export JSON</button>
-          <button className="btn btn-primary" onClick={submitAndReset}>Submit &amp; start new participant</button>
+          <button className="btn" onClick={exportJSON} disabled={submitState.phase === "uploading"}>
+            Export JSON {hasEndpoint ? "(backup)" : ""}
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={submitAndReset}
+            disabled={submitState.phase === "uploading"}
+          >
+            {submitState.phase === "uploading"
+              ? "Uploading…"
+              : hasEndpoint
+                ? "Submit to coordinator"
+                : "Export JSON & start new participant"}
+          </button>
         </div>
+        {submitState.phase !== "idle" && (
+          <div className={`submit-status submit-status-${submitState.phase}`}>
+            {submitState.message}
+          </div>
+        )}
       </div>
     </div>
   );
