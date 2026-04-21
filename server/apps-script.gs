@@ -68,6 +68,7 @@ function headerRow_(payload) {
   const header = [
     "receivedAt", "submissionId", "schemaVersion",
     "project", "participant",
+    "roundIndex", "roundSize", "poolSize", "poolResetThisRound",
     "startedAt", "completedAt", "durationSec",
     "totalQuestions", "answeredQuestions",
     `aq_${leftL}`, `aq_${rightL}`,
@@ -97,6 +98,10 @@ function flattenForRow_(payload) {
     payload.schemaVersion || "",
     payload.project || "",
     payload.participant || "",
+    num_(payload.roundIndex),
+    num_(payload.roundSize),
+    num_(payload.poolSize),
+    payload.poolResetThisRound === true ? "TRUE" : (payload.poolResetThisRound === false ? "FALSE" : ""),
     payload.startedAt || "",
     payload.completedAt || "",
     durationSec,

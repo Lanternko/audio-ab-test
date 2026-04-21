@@ -46,8 +46,10 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    // Schema v2: added participant, startedAt; switched to CMOS 7-point with two metrics per question.
-    const STORAGE_KEY = "tonewright-state-v2";
+    // Schema v3: introduced round sampling (selection + abMap) and
+    // per-participant seen tracking so repeat rounds get different clips.
+    const STORAGE_KEY = "tonewright-state-v3";
+    const SEEN_KEY = "tonewright-seen-v3";
 
     function loadState() {
       try {
@@ -60,19 +62,72 @@
       return null;
     }
 
-    function Welcome({ state, setState, setView }) {
-      const [name, setName] = useState(state.participant || "");
+    function loadSeen() {
+      try {
+        const raw = localStorage.getItem(SEEN_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) { }
+      return {};
+    }
+
+    function saveSeen(seen) {
+      try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { }
+    }
+
+    const participantKey = (name) => (name || "").trim().toLowerCase();
+
+    // Return the most-recently-used display name, to pre-fill Welcome.
+    function latestParticipantName() {
+      const seen = loadSeen();
+      let best = null, bestTs = 0;
+      for (const key of Object.keys(seen)) {
+        const e = seen[key];
+        const ts = e.lastUsedAt ? Date.parse(e.lastUsedAt) : 0;
+        if (ts >= bestTs) { bestTs = ts; best = e.displayName || key; }
+      }
+      return best || "";
+    }
+
+    // Prepare a fresh round's selection for this participant (excluding
+    // clips they've already seen, resetting the seen set if the unseen
+    // pool is too small).
+    function planRound(participant) {
+      const seen = loadSeen();
+      const entry = seen[participantKey(participant)] || { seenClipIds: [] };
+      return sampleRoundIndices(DATA.pool, DATA.roundSize, entry.seenClipIds);
+    }
+
+    // After a successful submit, merge this round's clipIds into the
+    // participant's seen set. If the round triggered a pool reset,
+    // start the seen set over (containing just this round's clips).
+    function recordRound(participant, clipIds, poolReset) {
+      const seen = loadSeen();
+      const key = participantKey(participant);
+      const prev = seen[key] || {
+        displayName: participant,
+        seenClipIds: [],
+        roundsCompleted: 0,
+        poolResetCount: 0,
+      };
+      const mergedSeen = poolReset
+        ? [...clipIds]
+        : [...new Set([...prev.seenClipIds, ...clipIds])];
+      seen[key] = {
+        displayName: participant,
+        seenClipIds: mergedSeen,
+        roundsCompleted: (prev.roundsCompleted || 0) + 1,
+        poolResetCount: (prev.poolResetCount || 0) + (poolReset ? 1 : 0),
+        lastUsedAt: new Date().toISOString(),
+      };
+      saveSeen(seen);
+    }
+
+    function Welcome({ startRound, suggestedName }) {
+      const [name, setName] = useState(suggestedName || "");
       const start = () => {
         const trimmed = name.trim();
         if (!trimmed) return;
-        setState({
-          participant: trimmed,
-          startedAt: new Date().toISOString(),
-          currentIdx: 0,
-          answers: {},
-          revealed: false,
-        });
-        setView("runner");
+        startRound(trimmed);
       };
       return (
         <div className="canvas welcome-canvas">
@@ -80,7 +135,7 @@
             <div className="eyebrow">{DATA.projectLabel} · Audio A/B Blind Test</div>
             <h1>Welcome to <em>Tonewright</em></h1>
             <p>
-              You will listen to <strong>{DATA.totalQuestions}</strong> pairs of audio clips labelled
+              You will listen to <strong>{DATA.roundSize}</strong> pairs of audio clips labelled
               <strong> A</strong> and <strong> B</strong>. For each pair, rate two dimensions on a
               <strong> 7-point CMOS scale (−3 … +3)</strong>:
             </p>
@@ -89,8 +144,9 @@
               <li><strong>Prompt Following</strong> — how faithfully each clip matches the written prompt shown above the players.</li>
             </ul>
             <p>
-              A and B identities are hidden during the test. After the last question, the true labels are revealed
-              and you export a JSON log to hand back to the coordinator.
+              A and B identities are hidden during each round. After you submit, a new round starts
+              automatically with a fresh random sample of {DATA.roundSize} clips from the {DATA.pool.length}-clip pool —
+              feel free to do as many rounds as you'd like.
             </p>
             <label htmlFor="participant-name">Your name</label>
             <input
@@ -120,6 +176,10 @@
       const [state, setState] = useState({
         participant: initial.participant || "",
         startedAt: initial.startedAt || null,
+        roundIndex: initial.roundIndex || 0,
+        selection: initial.selection || [],
+        abMap: initial.abMap || [],
+        poolResetThisRound: initial.poolResetThisRound || false,
         currentIdx: initial.currentIdx || 0,
         answers: initial.answers || {},
         revealed: initial.revealed || false,
@@ -130,6 +190,10 @@
           view,
           participant: state.participant,
           startedAt: state.startedAt,
+          roundIndex: state.roundIndex,
+          selection: state.selection,
+          abMap: state.abMap,
+          poolResetThisRound: state.poolResetThisRound,
           currentIdx: state.currentIdx,
           answers: state.answers,
           revealed: state.revealed,
@@ -139,6 +203,40 @@
       }, [view, state]);
 
       const goto = (v) => { setView(v); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+      // Begin a fresh round for this participant (samples from the pool).
+      const startRound = (name, prevRoundIndex = 0) => {
+        const { indices, poolReset } = planRound(name);
+        setState({
+          participant: name,
+          startedAt: new Date().toISOString(),
+          roundIndex: prevRoundIndex + 1,
+          selection: indices,
+          abMap: makeAbMap(indices.length),
+          poolResetThisRound: poolReset,
+          currentIdx: 0,
+          answers: {},
+          revealed: false,
+        });
+        setView("runner");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      // Called by Results after a successful submit — record the round's
+      // clips as seen, then sample & start the next round for the same
+      // participant.
+      const finishAndStartNext = (submittedClipIds, poolResetHappened) => {
+        recordRound(state.participant, submittedClipIds, poolResetHappened);
+        startRound(state.participant, state.roundIndex || 0);
+      };
+
+      const switchParticipant = () => {
+        setState({
+          participant: "", startedAt: null, roundIndex: 0,
+          selection: [], abMap: [], poolResetThisRound: false,
+          currentIdx: 0, answers: {}, revealed: false,
+        });
+      };
 
       // Welcome screen shown whenever participant name is empty
       if (!state.participant) {
@@ -153,7 +251,7 @@
                 </div>
               </div>
             </div>
-            <Welcome state={state} setState={setState} setView={setView} />
+            <Welcome startRound={(name) => startRound(name, 0)} suggestedName={latestParticipantName()} />
           </div>
         );
       }
@@ -165,7 +263,20 @@
               <div className="brand">
                 <span className="brand-dot" />
                 Tonewright
-                <span className="sub">{DATA.projectLabel} · <span className="participant-chip">{state.participant}</span></span>
+                <span className="sub">
+                  {DATA.projectLabel} ·{" "}
+                  <span className="participant-chip">
+                    {state.participant}
+                    {state.roundIndex > 0 && <span className="round-badge">R{state.roundIndex}</span>}
+                    <button
+                      type="button"
+                      className="switch-btn"
+                      onClick={switchParticipant}
+                      title="Switch to a different participant"
+                      aria-label="Switch participant"
+                    >×</button>
+                  </span>
+                </span>
               </div>
               <div className="nav">
                 <button className={view === "runner" ? "active" : ""} onClick={() => goto("runner")}>Evaluate</button>
@@ -177,7 +288,7 @@
 
           {view === "runner" && <Runner state={state} setState={setState} goto={goto} />}
           {view === "overview" && <Overview state={state} setState={setState} goto={goto} />}
-          {view === "results" && <Results state={state} setState={setState} goto={goto} />}
+          {view === "results" && <Results state={state} setState={setState} goto={goto} finishAndStartNext={finishAndStartNext} />}
         </div>
       );
     }

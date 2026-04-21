@@ -206,10 +206,32 @@ function CmosScale({ label, hint, value, onChange }) {
 }
 
 function Runner({ state, setState, goto }) {
-  const q = DATA.questions[state.currentIdx];
+  const roundSize = state.selection ? state.selection.length : 0;
+
+  // Edge case: state shows a participant but no round selected yet.
+  // Shouldn't happen in normal flow (App sets selection on startRound)
+  // but bail gracefully if state schema was reset mid-round.
+  if (!roundSize) {
+    return (
+      <div className="canvas canvas-compact">
+        <div className="runner-head">
+          <div>
+            <h1>No round in progress</h1>
+            <div className="muted sans" style={{fontSize:13, marginTop:4}}>
+              Click the × next to your name in the top bar to restart from the Welcome screen.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const poolIdx = state.selection[state.currentIdx];
+  const aIsV1 = state.abMap[state.currentIdx];
+  const poolItem = DATA.pool[poolIdx];
+  const q = buildQuestion(poolItem, state.currentIdx + 1, aIsV1, DATA.variants);
   const answer = state.answers[q.id] || {};
-  const variants = [...new Set(DATA.questions.flatMap(x => [x.aLabel, x.bLabel]))].sort();
-  const sideOf = (label) => variants[0] === label ? "left" : "right";
+  const sideOf = (label) => DATA.variants[0] === label ? "left" : "right";
 
   useEffect(() => {
     const onKey = (e) => {
@@ -217,13 +239,13 @@ function Runner({ state, setState, goto }) {
       if (e.key === "ArrowLeft" && state.currentIdx > 0) {
         setState(s => ({...s, currentIdx: s.currentIdx - 1 }));
       }
-      if (e.key === "ArrowRight" && state.currentIdx < DATA.totalQuestions - 1) {
+      if (e.key === "ArrowRight" && state.currentIdx < roundSize - 1) {
         setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [state.currentIdx]);
+  }, [state.currentIdx, roundSize]);
 
   const setMetric = (metric, val) => {
     setState(s => ({
@@ -246,19 +268,19 @@ function Runner({ state, setState, goto }) {
     <div className="canvas canvas-compact">
       <div className="runner-head">
         <div>
-          <div className="slug">{DATA.projectLabel} · Question {q.id} / {DATA.totalQuestions}</div>
+          <div className="slug">{DATA.projectLabel} · Round {state.roundIndex || 1} · Question {q.id} / {roundSize}</div>
           <h1>{q.title}<span className="dim" style={{fontWeight:400, marginLeft:10, fontSize:22}}>·</span> <em>A vs B</em></h1>
         </div>
-        <Ticker total={DATA.totalQuestions} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} />
+        <Ticker total={roundSize} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} />
         <div className="head-actions">
           <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
             <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> Previous
           </button>
           <button className="btn btn-primary" onClick={() => {
-            if (state.currentIdx === DATA.totalQuestions - 1) goto("results");
+            if (state.currentIdx === roundSize - 1) goto("results");
             else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
           }} disabled={!hasBoth}>
-            {state.currentIdx === DATA.totalQuestions - 1 ? "View results" : "Next"} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
+            {state.currentIdx === roundSize - 1 ? "View results" : "Next"} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
           </button>
         </div>
       </div>
@@ -269,8 +291,8 @@ function Runner({ state, setState, goto }) {
       </div>
 
       <div className="pair">
-        <Transport key={`${q.id}-A`} src={q.aFile} side="A" trueLabel={q.aLabel} labelSide={sideOf(q.aLabel)} revealed={state.revealed} />
-        <Transport key={`${q.id}-B`} src={q.bFile} side="B" trueLabel={q.bLabel} labelSide={sideOf(q.bLabel)} revealed={state.revealed} />
+        <Transport key={`${state.roundIndex}-${q.id}-A`} src={q.aFile} side="A" trueLabel={q.aLabel} labelSide={sideOf(q.aLabel)} revealed={state.revealed} />
+        <Transport key={`${state.roundIndex}-${q.id}-B`} src={q.bFile} side="B" trueLabel={q.bLabel} labelSide={sideOf(q.bLabel)} revealed={state.revealed} />
       </div>
 
       <div className="cmos-judgement">
@@ -293,7 +315,7 @@ function Runner({ state, setState, goto }) {
         <div className="shortcuts">
           <span><span className="kbd">←</span> Prev</span>
           <span><span className="kbd">→</span> Next</span>
-          <span>{answeredCount} / {DATA.totalQuestions} answered</span>
+          <span>{answeredCount} / {roundSize} answered</span>
         </div>
         <div className="nav-actions">
           <button className="btn btn-ghost" onClick={() => goto("overview")}>

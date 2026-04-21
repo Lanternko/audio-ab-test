@@ -140,7 +140,9 @@ body {
   color: var(--accent-ink);
 }
 .participant-chip {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-sans);
   font-size: 11px;
   font-weight: 500;
@@ -148,11 +150,41 @@ body {
   text-transform: none;
   color: var(--accent-ink);
   background: var(--accent-tint);
-  padding: 2px 9px;
+  padding: 2px 4px 2px 9px;
   border-radius: 999px;
   margin-left: 6px;
   border-left: none;
-  padding-left: 9px;
+}
+.participant-chip .round-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.participant-chip .switch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--accent-ink);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.55;
+  transition: opacity .15s, background .15s;
+}
+.participant-chip .switch-btn:hover {
+  background: var(--accent-soft);
+  opacity: 1;
 }
 
 /* ── Main canvas ──────────────────────────── */

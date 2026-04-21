@@ -21,14 +21,16 @@ Then open <http://localhost:8000/>.
 
 ## Workflow
 
-1. Each participant enters their name on the welcome screen.
-2. For each of the 8 questions they listen to blind samples **A** and **B**, then rate:
+1. Each participant enters their name on the welcome screen (the last-used name is pre-filled for convenience).
+2. A **round** is a random sample of **`roundSize`** clips from **`pool`** (default: 8 from 8). For each clip they listen to blind samples **A** and **B**, then rate:
    - **Audio Quality** (−3 … +3) — overall perceptual quality.
    - **Prompt Following** (−3 … +3) — faithfulness to the prompt shown above the players.
 3. After the last question, the **Results** page reveals the true identities (`p7v1` / `p8v1`) and shows weighted-score summaries per metric.
-4. Participant clicks **Submit to coordinator** — the full log is POSTed to the cloud endpoint (Google Sheets via Apps Script) and state is cleared so the next participant can start.
-   - If `SUBMIT_URL` is not configured, the button falls back to "Export JSON & start new participant" — a file named like `subjective_p7v1_vs_p8v1__Alice_Chen__2026-04-20-08-30-15.json` is downloaded and must be handed back manually.
-   - If an upload fails, a JSON backup is auto-downloaded so the data is never lost.
+4. Participant clicks **Submit & start next round** — the full log POSTs to the cloud endpoint (Google Sheets via Apps Script); a **new round immediately starts with a different sample of clips**. They can keep going indefinitely.
+   - Clips already seen by this participant are **excluded** from the next sample (tracked per-name in `localStorage`). When the unseen pool is smaller than `roundSize`, the seen set quietly resets so rounds never stall — `poolResetThisRound: true` is logged so you can filter in analysis.
+   - If `SUBMIT_URL` is empty the Submit button falls back to "Export JSON & start next round" — a file is downloaded, the next round still starts.
+   - If an upload fails, a JSON backup auto-downloads and the UI shows a **Retry upload** button. State isn't lost.
+   - Click the **×** next to the name in the topbar to log out / switch participant.
 
 ## Cloud submission setup (Google Apps Script + Sheets)
 
@@ -73,10 +75,27 @@ The exported JSON contains:
 
 Every participant's JSON is fully self-contained for offline analysis.
 
-## Dataset
+## Dataset (pool)
 
-Default: 10 MusicCaps clips × 2 variants (`p8` and `p9v1`), FLAC.
-To swap the dataset: replace the files in `audio/`, update the question entries + `variants` in [`data.js`](data.js).
+Default: **8 fixed-prompt clips × 2 variants** (`p7v1` and `p8v1`), WAV (peak-normalised to −1 dBFS).
+
+The **pool** sits in [`data.js`](data.js) under `DATA.pool`. Each entry:
+```js
+{
+  clipId: "piano",
+  title: "piano",
+  prompt: "…exact string fed to infer.py during generation…",
+  files: { p7v1: "piano_p7v1.wav", p8v1: "piano_p8v1.wav" },
+}
+```
+
+To grow the pool (e.g. from 8 → 20 → 40):
+1. Generate the new clips for both variants on the training server.
+2. Drop the WAVs into `audio/` (filenames like `<clipId>_p7v1.wav` / `<clipId>_p8v1.wav`).
+3. Append entries to `DATA.pool` with the exact prompt text.
+4. Commit + push. `DATA.roundSize` (default 8) stays the same — larger pools just mean more rounds per participant before any repeat.
+
+To change which two variants are compared, update `DATA.variants` (must be 2 strings, e.g. `["p8v1", "p9v1"]`).
 
 ## Files
 
