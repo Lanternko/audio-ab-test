@@ -1,65 +1,62 @@
 // Shared data + helpers for Tonewright A/B listening test
-// Pairwise: Phase 8 vs P9 V1 (bug-fix) · 10 MusicCaps clips, seed=123
+// Subjective: P7v1 vs P8v1 · 8 fixed-prompt clips (peak-normalised to −1 dBFS)
 // Exposes: DATA, CMOS_OPTIONS, METRICS, icons
 
-// A/B assignment is deterministic but non-alternating, so the reveal has signal.
-// true  → A is p8 , B is p9v1
-// false → A is p9v1, B is p8
-const AB_MAP = [false, true, false, true, true, false, true, false, true, false];
+// A/B assignment (fixed, 4 × true / 4 × false so each variant lands on side A four times).
+// true  → A is p7v1, B is p8v1
+// false → A is p8v1, B is p7v1
+const AB_MAP = [true, false, true, false, false, true, false, true];
 
-function mkQ(n, clipId, prompt, p8File, p9File) {
-  const aIsP8 = AB_MAP[n - 1];
-  const aFileName = aIsP8 ? p8File : p9File;
-  const bFileName = aIsP8 ? p9File : p8File;
+function mkQ(n, clipName, prompt, v1File, v2File) {
+  const aIsV1 = AB_MAP[n - 1];
+  const aFileName = aIsV1 ? v1File : v2File;
+  const bFileName = aIsV1 ? v2File : v1File;
   return {
     id: n,
-    title: `clip_${String(n).padStart(2, "0")}`,
-    clipId,
+    title: clipName,
+    clipId: clipName,
     desc: prompt,
     aFile: `audio/${aFileName}`,
     bFile: `audio/${bFileName}`,
     aFileName,
     bFileName,
-    aLabel: aIsP8 ? "p8" : "p9v1",
-    bLabel: aIsP8 ? "p9v1" : "p8",
+    aLabel: aIsV1 ? "p7v1" : "p8v1",
+    bLabel: aIsV1 ? "p8v1" : "p7v1",
   };
 }
 
+// Prompts below are the exact strings fed to infer.py during generation
+// (verified against docs/eval/subjective_prompts.md on 140.122.184.29).
+// If you swap audio, update the matching `desc` string here too.
 const DATA = {
-  project: "pairwise_p8_vs_p9v1",
-  projectLabel: "Pairwise · P8 vs P9v1",
-  totalQuestions: 10,
+  project: "subjective_p7v1_vs_p8v1",
+  projectLabel: "Subjective · P7v1 vs P8v1",
+  totalQuestions: 8,
   questions: [
-    mkQ(1, "HRVVqstIabc_240",
-        "The low quality recording features an orchestra song that consists of a string section melody. The section contains violin melody playing in the left channel, cello in the right channel and later on, double bass in the middle. It sounds emotional and …",
-        "01_HRVVqstIabc_240_p8.flac", "01_HRVVqstIabc_240_p9v1.flac"),
-    mkQ(2, "gsIB8HjsRtw_100",
-        "The low quality recording features a live performance of a folk song that contains an accordion melody playing over acoustic rhythm guitar, groovy bass, punchy kick and snare hits, shimmering cymbals, saxophone and trumpet melody. It sounds passionat…",
-        "02_gsIB8HjsRtw_100_p8.flac", "02_gsIB8HjsRtw_100_p9v1.flac"),
-    mkQ(3, "u68Ghaf_Phs_10",
-        "This folk song features a variety of instruments. The main melody is played on a violin, flute and accordion. The double bass plays a running bass pattern. An acoustic guitar strums chords. A hammered dulcimer plays parts that give a percussive feel.",
-        "03_u68Ghaf_Phs_10_p8.flac",  "03_u68Ghaf_Phs_10_p9v1.flac"),
-    mkQ(4, "W2nlA65AwtU_390",
-        "The music features a synth sound playing a repeating melody. An electric piano accompanies the melody with chords. In the second half of the music except the drums and bass guitar kick in. Listening to this music I get lounge vibes.",
-        "04_W2nlA65AwtU_390_p8.flac", "04_W2nlA65AwtU_390_p9v1.flac"),
-    mkQ(5, "5r4jLwjj_Ik_140",
-        "This is a jazz music piece. There is a saxophone playing a solo in the lead. A tuba is playing the bass line. There is an electric guitar strumming chords. The rhythm is being played on the ride cymbal by the acoustic drums. The instrumentals have a …",
-        "05_5r4jLwjj_Ik_140_p8.flac", "05_5r4jLwjj_Ik_140_p9v1.flac"),
-    mkQ(6, "50fuQm8B2Yg_110",
-        "This jazz song features a saxophone playing the main melody. This is accompanied by percussion playing a jazz beat. A piano plays jazz chords. The double bass plays the root notes with flourishes and fills. This song is the outro of a song and abrupt…",
-        "06_50fuQm8B2Yg_110_p8.flac", "06_50fuQm8B2Yg_110_p9v1.flac"),
-    mkQ(7, "FdvGsAq99r0_30",
-        "This is an Arabic music piece being performed live by an orchestra. There is a new flute playing a solo in the lead. The melodic background consists of the violin, the oud, and the qanun while the cello and the bass guitar are playing in the lower ra…",
-        "07_FdvGsAq99r0_30_p8.flac",  "07_FdvGsAq99r0_30_p9v1.flac"),
-    mkQ(8, "2UnlMwW8nyI_30",
-        "This children's song features an accordion playing chords. This is accompanied by percussion playing a simple beat. The bass plays the root notes of the chords. An instrument like the xylophone plays the main melody on the low frequencies. There are …",
-        "08_2UnlMwW8nyI_30_p8.flac",  "08_2UnlMwW8nyI_30_p9v1.flac"),
-    mkQ(9, "CM7jMnBXw2Y_20",
-        "This rock song features a guitar solo being played on a distortion guitar. This starts off with a string bend followed by a descending lick. A harmonic string scratch technique is played to produce a screeching sound. This is followed by a fast ascen…",
-        "09_CM7jMnBXw2Y_20_p8.flac",  "09_CM7jMnBXw2Y_20_p9v1.flac"),
-    mkQ(10, "GPwzpw_47Dg_260",
-        "Low fidelity live recording of an instrumental eastern European string ensemble with bowed violin, bowed bass. Crowd noise is audible. No drums are present. There is a feeling of gaiety and levity.",
-        "10_GPwzpw_47Dg_260_p8.flac", "10_GPwzpw_47Dg_260_p9v1.flac"),
+    mkQ(1, "piano",
+        "This is a piano cover of a glam metal music piece. The piece is being played gently on a keyboard with a grand piano sound. There is a calming, relaxing atmosphere in this piece.",
+        "piano_p7v1.wav", "piano_p8v1.wav"),
+    mkQ(2, "metal",
+        "This is the recording of a heavy metal music piece. There is a male vocalist singing melodically in the lead. The main tune is being played by the distorted electric guitar while the bass guitar is playing in the background. The rhythmic background consists of a simple acoustic drum beat. The atmosphere is aggressive.",
+        "metal_p7v1.wav", "metal_p8v1.wav"),
+    mkQ(3, "lofi",
+        "The low quality recording features a live performance of a folk song that consists of an arpeggiated electric guitar melody played over groovy bass, punchy snare and shimmering cymbals. It sounds energetic and the recording is noisy and in mono.",
+        "lofi_p7v1.wav", "lofi_p8v1.wav"),
+    mkQ(4, "edm",
+        "This is an electronic dance music piece. There is a synth lead playing the main melody. The beat consists of a kick drum, clap, hi-hat and synthesized bass. The atmosphere is energetic and euphoric.",
+        "edm_p7v1.wav", "edm_p8v1.wav"),
+    mkQ(5, "cinematic",
+        "This is a cinematic orchestral piece. There are strings playing a sweeping melody with brass accents. The piece builds in intensity with a dramatic crescendo. The atmosphere is epic and emotional.",
+        "cinematic_p7v1.wav", "cinematic_p8v1.wav"),
+    mkQ(6, "acoustic",
+        "A solo acoustic guitar piece with fingerpicking. Gentle and melancholic.",
+        "acoustic_p7v1.wav", "acoustic_p8v1.wav"),
+    mkQ(7, "jazz",
+        "A smooth jazz piece with a saxophone lead, upright bass, and brushed drums. Studio quality recording with warm tones.",
+        "jazz_p7v1.wav", "jazz_p8v1.wav"),
+    mkQ(8, "ambient",
+        "A dark ambient soundscape with drone pads, distant reverb, and subtle noise. Lo-fi texture with tape saturation.",
+        "ambient_p7v1.wav", "ambient_p8v1.wav"),
   ],
 };
 
