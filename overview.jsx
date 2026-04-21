@@ -49,7 +49,7 @@ function roundQuestions(state) {
   });
 }
 
-function Overview({ state, setState, goto, lang }) {
+function Overview({ state, setState, goto, lang, requestViewResults }) {
   const copy = getText(lang);
   const questions = roundQuestions(state);
   const roundSize = questions.length;
@@ -123,7 +123,11 @@ function Overview({ state, setState, goto, lang }) {
         </div>
         <div className="overview-actions-buttons">
           <button className="btn" onClick={() => goto("runner")}>{copy.overview.continue}</button>
-          <button className="btn btn-primary" onClick={() => goto("results")} disabled={answered < roundSize || roundSize === 0}>
+          <button
+            className="btn btn-primary"
+            onClick={() => requestViewResults && requestViewResults()}
+            disabled={answered < roundSize || roundSize === 0 || state.submitting || state.submitted}
+          >
             {copy.overview.viewResults}
           </button>
         </div>
@@ -250,6 +254,14 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
   const submitUrl = (typeof window !== "undefined" && window.SUBMIT_URL) || "";
   const hasEndpoint = !!submitUrl;
 
+  // If user lands on Results without having pressed "View Results" first,
+  // bounce them back so they must go through the confirm + submit flow.
+  useEffectOV(() => {
+    if (roundSize > 0 && !state.submitting && !state.submitted) {
+      goto(answered === roundSize ? "overview" : "runner");
+    }
+  }, []);
+
   const buildPayload = () => {
     const now = new Date().toISOString();
     const log = questions.map(q => {
@@ -313,33 +325,23 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
 
   const exportJSON = () => downloadJSON(buildPayload());
 
-  const handoffToNextRound = (payload) => {
-    // Record which clips the participant just saw + whether a pool reset
-    // happened for this round, then tell App to sample a new round.
-    const clipIds = payload.selection || questions.map(q => q.clipId);
-    const poolReset = !!state.poolResetThisRound;
-    finishAndStartNext && finishAndStartNext(clipIds, poolReset);
-  };
-
-  const submitRound = async () => {
+  // Auto-submit runs once on mount when the user has pressed View Results
+  // (state.submitting = true) but upload hasn't completed yet.
+  const runUpload = async () => {
     const payload = buildPayload();
 
-    // No cloud endpoint → download JSON, then still roll to next round
     if (!hasEndpoint) {
-      if (!confirm(copy.results.exportConfirm(state.roundIndex || 1, state.participant))) return;
       downloadJSON(payload);
       setSubmitState({ phase: "ok", message: copy.results.exported(state.roundIndex || 1) });
-      setTimeout(() => handoffToNextRound(payload), 900);
+      setState(s => ({ ...s, submitted: true, submitting: false }));
       return;
     }
-
-    if (!confirm(copy.results.submitConfirm(state.roundIndex || 1, state.participant))) return;
 
     setSubmitState({ phase: "uploading", message: copy.results.uploading });
     try {
       await uploadSubmission(payload, submitUrl);
       setSubmitState({ phase: "ok", message: copy.results.submitted(state.roundIndex || 1, payload.submissionId.slice(0, 8)) });
-      setTimeout(() => handoffToNextRound(payload), 1200);
+      setState(s => ({ ...s, submitted: true, submitting: false }));
     } catch (err) {
       console.error("Upload failed", err);
       downloadJSON(payload);
@@ -350,16 +352,28 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
     }
   };
 
+  useEffectOV(() => {
+    if (roundSize > 0 && state.submitting && !state.submitted && submitState.phase === "idle") {
+      runUpload();
+    }
+  }, [state.submitting, state.submitted, roundSize]);
+
   const retryUpload = async () => {
     const payload = buildPayload();
     setSubmitState({ phase: "uploading", message: copy.results.retrying });
     try {
       await uploadSubmission(payload, submitUrl);
       setSubmitState({ phase: "ok", message: copy.results.submitted(state.roundIndex || 1, payload.submissionId.slice(0, 8)) });
-      setTimeout(() => handoffToNextRound(payload), 1200);
+      setState(s => ({ ...s, submitted: true, submitting: false }));
     } catch (err) {
       setSubmitState({ phase: "err", message: copy.results.retryFailed(err.message) });
     }
+  };
+
+  const startNextRound = () => {
+    const clipIds = questions.map(q => q.clipId);
+    const poolReset = !!state.poolResetThisRound;
+    finishAndStartNext && finishAndStartNext(clipIds, poolReset);
   };
 
   if (roundSize === 0) {
@@ -424,21 +438,17 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
           {hasEndpoint ? copy.results.submitMessage : copy.results.exportMessage}
         </div>
         <div className="actions">
-          {submitState.phase === "err" ? (
+          {state.submitted ? (
+            <button className="btn btn-primary" onClick={startNextRound}>
+              {copy.results.nextRound}
+            </button>
+          ) : submitState.phase === "err" ? (
             <button className="btn btn-primary" onClick={retryUpload}>
               {copy.results.retry}
             </button>
           ) : (
-            <button
-              className="btn btn-primary"
-              onClick={submitRound}
-              disabled={submitState.phase === "uploading" || submitState.phase === "ok"}
-            >
-              {submitState.phase === "uploading"
-                ? copy.results.uploading
-                : hasEndpoint
-                  ? copy.results.submit
-                  : copy.results.downloadAndNext}
+            <button className="btn btn-primary" disabled>
+              {copy.results.uploading}
             </button>
           )}
           <button className="btn" onClick={exportJSON} disabled={submitState.phase === "uploading"}>

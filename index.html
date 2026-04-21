@@ -159,6 +159,8 @@
         currentIdx: initial.currentIdx || 0,
         answers: initial.answers || {},
         revealed: initial.revealed || false,
+        submitting: initial.submitting || false,
+        submitted: initial.submitted || false,
       });
       const copy = getText(lang);
 
@@ -179,6 +181,8 @@
           currentIdx: state.currentIdx,
           answers: state.answers,
           revealed: state.revealed,
+          submitting: state.submitting,
+          submitted: state.submitted,
           dataKey: DATA.project,
         };
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -199,9 +203,27 @@
           currentIdx: 0,
           answers: {},
           revealed: false,
+          submitting: false,
+          submitted: false,
         });
         setView("runner");
         window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      // Called from Runner/Overview when user clicks "View Results" —
+      // shows a confirm dialog, then locks answers and navigates to
+      // Results (which auto-submits on mount).
+      const requestViewResults = () => {
+        const submitUrl = (typeof window !== "undefined" && window.SUBMIT_URL) || "";
+        const hasEndpoint = !!submitUrl;
+        const round = state.roundIndex || 1;
+        const participant = state.participant;
+        const msg = hasEndpoint
+          ? copy.results.submitConfirm(round, participant)
+          : copy.results.exportConfirm(round, participant);
+        if (!confirm(msg)) return;
+        setState(s => ({ ...s, submitting: true, revealed: true }));
+        goto("results");
       };
 
       // Called by Results after a successful submit — record the round's
@@ -217,12 +239,11 @@
           participant: "", startedAt: null, roundIndex: 0,
           selection: [], abMap: [], poolResetThisRound: false,
           currentIdx: 0, answers: {}, revealed: false,
+          submitting: false, submitted: false,
         });
       };
 
-      const roundBadge = state.roundIndex > 0
-        ? (lang === "zh" ? `第 ${state.roundIndex} 輪` : `${copy.common.roundBadge}${state.roundIndex}`)
-        : null;
+      const roundBadge = state.roundIndex > 0 ? `${state.roundIndex}` : null;
 
       // Welcome screen shown whenever participant name is empty
       if (!state.participant) {
@@ -252,34 +273,32 @@
               <div className="brand">
                 <span className="brand-dot" />
                 {DATA.appName}
-                <span className="sub">
-                  {DATA.projectLabel} ·{" "}
-                  <span className="participant-chip">
-                    {state.participant}
-                    {roundBadge && <span className="round-badge">{roundBadge}</span>}
-                    <button
-                      type="button"
-                      className="switch-btn"
-                      onClick={switchParticipant}
-                      title={copy.common.switchParticipant}
-                      aria-label={copy.common.switchParticipant}
-                    >×</button>
-                  </span>
+                <span className="sub">{DATA.projectLabel}</span>
+                <span className="participant-chip">
+                  {state.participant}
+                  {roundBadge && <span className="round-badge">{roundBadge}</span>}
+                  <button
+                    type="button"
+                    className="switch-btn"
+                    onClick={switchParticipant}
+                    title={copy.common.switchParticipant}
+                    aria-label={copy.common.switchParticipant}
+                  >×</button>
                 </span>
               </div>
               <div className="topbar-controls">
                 <div className="nav">
-                  <button className={view === "runner" ? "active" : ""} onClick={() => goto("runner")}>{copy.nav.evaluate}</button>
-                  <button className={view === "overview" ? "active" : ""} onClick={() => goto("overview")}>{copy.nav.overview}</button>
-                  <button className={view === "results" ? "active" : ""} onClick={() => goto("results")}>{copy.nav.results}</button>
+                  <button className={view === "runner" ? "active" : ""} disabled={state.submitting || state.submitted} onClick={() => goto("runner")}>{copy.nav.evaluate}</button>
+                  <button className={view === "overview" ? "active" : ""} disabled={state.submitting || state.submitted} onClick={() => goto("overview")}>{copy.nav.overview}</button>
+                  <button className={view === "results" ? "active" : ""} disabled={!state.submitted} onClick={() => goto("results")}>{copy.nav.results}</button>
                 </div>
                 <LanguageSwitch lang={lang} setLang={setLang} />
               </div>
             </div>
           </div>
 
-          {view === "runner" && <Runner state={state} setState={setState} goto={goto} lang={lang} />}
-          {view === "overview" && <Overview state={state} setState={setState} goto={goto} lang={lang} />}
+          {view === "runner" && <Runner state={state} setState={setState} goto={goto} lang={lang} requestViewResults={requestViewResults} />}
+          {view === "overview" && <Overview state={state} setState={setState} goto={goto} lang={lang} requestViewResults={requestViewResults} />}
           {view === "results" && <Results state={state} setState={setState} goto={goto} finishAndStartNext={finishAndStartNext} lang={lang} />}
         </div>
       );

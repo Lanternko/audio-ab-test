@@ -178,11 +178,11 @@ function Ticker({ total, current, answers, onJump, lang }) {
   );
 }
 
-function CmosScale({ label, hint, value, onChange, lang }) {
+function CmosScale({ label, hint, value, onChange, lang, disabled }) {
   const copy = getText(lang);
   const options = getCmosOptions(lang);
   return (
-    <div className="cmos-row">
+    <div className={`cmos-row ${disabled ? "disabled" : ""}`}>
       <div className="cmos-meta">
         <div className="cmos-label">{label}</div>
         <div className="cmos-hint">{hint}</div>
@@ -198,6 +198,7 @@ function CmosScale({ label, hint, value, onChange, lang }) {
               onClick={() => onChange(opt.val)}
               title={opt.label}
               aria-label={opt.label}
+              disabled={disabled}
             >
               {opt.val > 0 ? `+${opt.val}` : opt.val}
             </button>
@@ -209,10 +210,11 @@ function CmosScale({ label, hint, value, onChange, lang }) {
   );
 }
 
-function Runner({ state, setState, goto, lang }) {
+function Runner({ state, setState, goto, lang, requestViewResults }) {
   const copy = getText(lang);
   const metrics = getMetrics(lang);
   const roundSize = state.selection ? state.selection.length : 0;
+  const locked = !!(state.submitting || state.submitted);
 
   // Edge case: state shows a participant but no round selected yet.
   // Shouldn't happen in normal flow (App sets selection on startRound)
@@ -252,15 +254,17 @@ function Runner({ state, setState, goto, lang }) {
         const cur = state.answers[state.currentIdx + 1] || {};
         const done = cur.audioQuality != null && cur.promptFollowing != null;
         if (!done) return;
-        if (state.currentIdx === roundSize - 1) goto("results");
-        else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
+        if (state.currentIdx === roundSize - 1) {
+          if (!locked) requestViewResults && requestViewResults();
+        } else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [state.currentIdx, roundSize]);
+  }, [state.currentIdx, roundSize, locked, requestViewResults]);
 
   const setMetric = (metric, val) => {
+    if (locked) return;
     setState(s => ({
       ...s,
       answers: {
@@ -306,6 +310,7 @@ function Runner({ state, setState, goto, lang }) {
             value={answer[m.key]}
             onChange={(v) => setMetric(m.key, v)}
             lang={lang}
+            disabled={locked}
           />
         ))}
       </div>
@@ -318,10 +323,11 @@ function Runner({ state, setState, goto, lang }) {
           <button
             className="btn btn-primary"
             onClick={() => {
-              if (state.currentIdx === roundSize - 1) goto("results");
-              else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
+              if (state.currentIdx === roundSize - 1) {
+                if (!locked) requestViewResults && requestViewResults();
+              } else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
             }}
-            disabled={!hasBoth}
+            disabled={!hasBoth || locked}
           >
             {state.currentIdx === roundSize - 1 ? copy.runner.viewResults : copy.runner.next} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
           </button>
