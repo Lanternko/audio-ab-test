@@ -593,11 +593,38 @@
 
 /* ── Responsive-ish ──────────────────────── */
 @media (max-width: 860px) {
+  .runner-head {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+  .runner-head .slug {
+    font-size: 10px;
+    margin-bottom: 4px;
+    letter-spacing: 0.1em;
+  }
+  .runner-head h1 {
+    font-size: 20px;
+    line-height: 1.15;
+  }
+  .runner-head h1 .dim {
+    font-size: 16px !important;
+    margin-left: 6px !important;
+  }
+  .ticker { padding-bottom: 2px; justify-content: flex-start; }
+  .ticker .tick { width: 18px; }
+  .ticker-label { text-align: left; margin-top: 4px; }
+  .prompt-box {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
   .pair { grid-template-columns: 1fr; }
   .cmos-row { grid-template-columns: 1fr; gap: 10px; }
   .cmos-track { grid-template-columns: 1fr; }
   .cmos-end { display: none; }
-  .prompt-box { flex-direction: column; }
   .footer-bar {
     flex-direction: column;
     align-items: stretch;

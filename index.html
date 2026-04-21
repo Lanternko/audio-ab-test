@@ -243,8 +243,6 @@
         });
       };
 
-      const roundBadge = state.roundIndex > 0 ? `${state.roundIndex}` : null;
-
       // Welcome screen shown whenever participant name is empty
       if (!state.participant) {
         return (
@@ -276,7 +274,6 @@
                 <span className="sub">{DATA.projectLabel}</span>
                 <span className="participant-chip">
                   {state.participant}
-                  {roundBadge && <span className="round-badge">{roundBadge}</span>}
                   <button
                     type="button"
                     className="switch-btn"

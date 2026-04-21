@@ -74,7 +74,7 @@ function Overview({ state, setState, goto, lang, requestViewResults }) {
         <div className="stat">
           <div className="label">{copy.overview.participantRound}</div>
           <div className="value" style={{fontSize: 22, fontFamily: "var(--font-serif)"}}>
-            {state.participant || "—"} <span className="suffix">· {lang === "zh" ? `第 ${state.roundIndex || 1} 輪` : `R${state.roundIndex || 1}`}</span>
+            {state.participant || "—"}
           </div>
         </div>
         <div className="stat">
