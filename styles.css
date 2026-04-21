@@ -445,22 +445,10 @@ body {
   color: var(--accent);
   font-weight: 400;
 }
-.welcome-lang {
+.welcome-card-topbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 14px;
+  justify-content: flex-end;
   margin-bottom: 16px;
-  background: var(--bg-sunken);
-  border-radius: 12px;
-}
-.welcome-lang-label {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  color: var(--text-tertiary);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 .welcome-card p {
   font-family: var(--font-sans);

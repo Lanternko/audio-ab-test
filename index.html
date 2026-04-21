@@ -110,12 +110,11 @@
       return (
         <div className="canvas welcome-canvas">
           <div className="welcome-card">
-            <div className="eyebrow">{copy.welcome.eyebrow}</div>
-            <h1>{copy.welcome.titleLead} <em>{copy.welcome.heroName}</em></h1>
-            <div className="welcome-lang">
-              <span className="welcome-lang-label">{lang === "zh" ? "介面語言" : "Interface language"}</span>
+            <div className="welcome-card-topbar">
               <LanguageSwitch lang={lang} setLang={setLang} />
             </div>
+            <div className="eyebrow">{copy.welcome.eyebrow}</div>
+            <h1>{copy.welcome.titleLead} <em>{copy.welcome.heroName}</em></h1>
             <p>{copy.welcome.intro(DATA.roundSize)}</p>
             <ul>
               {getMetrics(lang).map(metric => (
@@ -151,7 +150,7 @@
 
     function App() {
       const initial = loadState() || {};
-      const [lang, setLang] = useState(initial.lang || detectPreferredLang());
+      const [lang, setLang] = useState(initial.lang || "en");
       const [view, setView] = useState(initial.view || "runner");
       const [state, setState] = useState({
         participant: initial.participant || "",
