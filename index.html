@@ -81,15 +81,21 @@
     }
 
     function LanguageSwitch({ lang, setLang }) {
-      const toggle = () => setLang(lang === "en" ? "zh" : "en");
-      const oppositeLabel = lang === "en" ? "中文" : "EN";
       return (
-        <button type="button" className="lang-toggle" onClick={toggle} aria-label={`Switch to ${oppositeLabel}`}>
-          <span className={`lang-track ${lang === "zh" ? "on" : ""}`}>
-            <span className="lang-thumb" />
-          </span>
-          <span className="lang-toggle-label">{oppositeLabel}</span>
-        </button>
+        <div className="lang-seg" role="group" aria-label="Language">
+          <button
+            type="button"
+            className={lang === "en" ? "active" : ""}
+            onClick={() => setLang("en")}
+            aria-pressed={lang === "en"}
+          >EN</button>
+          <button
+            type="button"
+            className={lang === "zh" ? "active" : ""}
+            onClick={() => setLang("zh")}
+            aria-pressed={lang === "zh"}
+          >中</button>
+        </div>
       );
     }
 
@@ -134,9 +140,6 @@
             >
               {copy.welcome.start} →
             </button>
-            <div className="welcome-lang-footer">
-              <LanguageSwitch lang={lang} setLang={setLang} />
-            </div>
           </div>
         </div>
       );
@@ -231,6 +234,9 @@
                   <span className="brand-dot" />
                   {DATA.appName}
                   <span className="sub">{DATA.projectLabel}</span>
+                </div>
+                <div className="topbar-controls">
+                  <LanguageSwitch lang={lang} setLang={setLang} />
                 </div>
               </div>
             </div>
