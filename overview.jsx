@@ -405,6 +405,22 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
         <MetricCard key={m.key} metric={m} answers={state.answers} leftL={leftL} rightL={rightL} questions={questions} lang={lang} />
       ))}
 
+      <div className="ab-diff-card">
+        <h3>{copy.results.abDiffTitle}</h3>
+        <div className="ab-diff-row">
+          {[leftL, rightL].map(v => (
+            <div key={v} className={`ab-diff-item ${v === leftL ? "left" : "right"}`}>
+              <span className="ab-diff-label">{v}</span>
+              <span className="ab-diff-desc">
+                {lang === "zh"
+                  ? (DATA.variantDescriptions?.[v]?.zh || v)
+                  : (DATA.variantDescriptions?.[v]?.en || v)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="reveal-table">
         <div className="reveal-row header">
           <div>{copy.results.table.number}</div>
@@ -438,6 +454,11 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
           {hasEndpoint ? copy.results.submitMessage : copy.results.exportMessage}
         </div>
         <div className="actions">
+          {state.submitted && (
+            <button className="btn" onClick={() => goto("runner")}>
+              {copy.results.backToReview}
+            </button>
+          )}
           {state.submitted ? (
             <button className="btn btn-primary" onClick={startNextRound}>
               {copy.results.nextRound}

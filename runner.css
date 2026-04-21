@@ -463,11 +463,27 @@
   font-size: 12px;
   color: var(--text-secondary);
 }
-.footer-bar .nav-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.footer-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.review-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* ── Prompt box (shows the MusicCaps prompt under the header) ─ */
@@ -629,8 +645,12 @@
     flex-direction: column;
     align-items: stretch;
     border-radius: 18px;
+    gap: 8px;
   }
-  .footer-bar .nav-actions .btn {
+  .footer-bar .btn {
     width: 100%;
+  }
+  .footer-hint {
+    text-align: center;
   }
 }

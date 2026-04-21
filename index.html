@@ -285,9 +285,9 @@
               </div>
               <div className="topbar-controls">
                 <div className="nav">
-                  <button className={view === "runner" ? "active" : ""} disabled={state.submitting || state.submitted} onClick={() => goto("runner")}>{copy.nav.evaluate}</button>
-                  <button className={view === "overview" ? "active" : ""} disabled={state.submitting || state.submitted} onClick={() => goto("overview")}>{copy.nav.overview}</button>
-                  <button className={view === "results" ? "active" : ""} disabled={!state.submitted} onClick={() => goto("results")}>{copy.nav.results}</button>
+                  <button className={view === "runner" ? "active" : ""} disabled={state.submitting} onClick={() => goto("runner")}>{copy.nav.evaluate}</button>
+                  <button className={view === "overview" ? "active" : ""} disabled={state.submitting} onClick={() => goto("overview")}>{copy.nav.overview}</button>
+                  <button className={view === "results" ? "active" : ""} disabled={!state.submitted && !state.submitting} onClick={() => goto("results")}>{copy.nav.results}</button>
                 </div>
                 <LanguageSwitch lang={lang} setLang={setLang} />
               </div>

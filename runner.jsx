@@ -251,17 +251,22 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
         setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
       }
       if (e.key === "Enter") {
-        const cur = state.answers[state.currentIdx + 1] || {};
-        const done = cur.audioQuality != null && cur.promptFollowing != null;
-        if (!done) return;
-        if (state.currentIdx === roundSize - 1) {
-          if (!locked) requestViewResults && requestViewResults();
-        } else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
+        if (state.submitted) {
+          if (state.currentIdx === roundSize - 1) goto("results");
+          else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
+        } else {
+          const cur = state.answers[state.currentIdx + 1] || {};
+          const done = cur.audioQuality != null && cur.promptFollowing != null;
+          if (!done) return;
+          if (state.currentIdx === roundSize - 1) {
+            if (!locked) requestViewResults && requestViewResults();
+          } else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
+        }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [state.currentIdx, roundSize, locked, requestViewResults]);
+  }, [state.currentIdx, roundSize, locked, requestViewResults, state.submitted, goto]);
 
   const setMetric = (metric, val) => {
     if (locked) return;
@@ -291,9 +296,13 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
         <Ticker total={roundSize} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} lang={lang} />
       </div>
 
+      {locked && state.revealed && (
+        <div className="review-banner">{copy.runner.reviewMode}</div>
+      )}
+
       <div className="prompt-box">
         <span className="prompt-tag">{copy.runner.promptTag}</span>
-        <span className="prompt-text">{q.desc}</span>
+        <span className="prompt-text" dangerouslySetInnerHTML={{__html: boldifyHtml(q.desc)}} />
       </div>
 
       <div className="pair">
@@ -316,22 +325,24 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
       </div>
 
       <div className="footer-bar">
-        <div className="nav-actions">
-          <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
-            <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> {copy.runner.previous}
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              if (state.currentIdx === roundSize - 1) {
-                if (!locked) requestViewResults && requestViewResults();
-              } else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
-            }}
-            disabled={!hasBoth || locked}
-          >
-            {state.currentIdx === roundSize - 1 ? copy.runner.viewResults : copy.runner.next} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
-          </button>
-        </div>
+        <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
+          <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> {copy.runner.previous}
+        </button>
+        <span className="footer-hint">{copy.runner.keyboardHint}</span>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (state.currentIdx === roundSize - 1) {
+              if (state.submitted) goto("results");
+              else if (!locked) requestViewResults && requestViewResults();
+            } else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
+          }}
+          disabled={state.submitting || (!state.submitted && !hasBoth)}
+        >
+          {state.currentIdx === roundSize - 1
+            ? (state.submitted ? copy.runner.backToResults : copy.runner.viewResults)
+            : copy.runner.next} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
+        </button>
       </div>
     </div>
   );
