@@ -52,7 +52,7 @@
     const LEGACY_STORAGE_KEYS = ["tonewright-state-v3"];
     const SEEN_KEY = "audio-ab-test-seen-v4";
     const LEGACY_SEEN_KEYS = ["tonewright-seen-v3"];
-    const VALID_DATA_KEYS = new Set([DATA.project, ...LEGACY_PROJECT_KEYS]);
+    const VALID_DATA_KEYS = new Set([DATA.project, ...(window.LEGACY_PROJECT_KEYS || [])]);
 
     function loadState() {
       for (const key of [STORAGE_KEY, ...LEGACY_STORAGE_KEYS]) {
