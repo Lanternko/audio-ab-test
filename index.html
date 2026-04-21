@@ -81,21 +81,15 @@
     }
 
     function LanguageSwitch({ lang, setLang }) {
+      const toggle = () => setLang(lang === "en" ? "zh" : "en");
       return (
-        <div className="lang-switch" role="group" aria-label="Language switch">
+        <button type="button" className="lang-switch" onClick={toggle} aria-label="Toggle language">
           {LANG_OPTIONS.map(option => (
-            <button
-              key={option.key}
-              type="button"
-              className={lang === option.key ? "active" : ""}
-              onClick={() => setLang(option.key)}
-              aria-pressed={lang === option.key}
-              title={option.ariaLabel}
-            >
+            <span key={option.key} className={lang === option.key ? "active" : ""}>
               {option.label}
-            </button>
+            </span>
           ))}
-        </div>
+        </button>
       );
     }
 
