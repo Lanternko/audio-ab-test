@@ -49,7 +49,8 @@ function roundQuestions(state) {
   });
 }
 
-function Overview({ state, setState, goto }) {
+function Overview({ state, setState, goto, lang }) {
+  const copy = getText(lang);
   const questions = roundQuestions(state);
   const roundSize = questions.length;
   const answered = Object.values(state.answers).filter(isAnswered).length;
@@ -59,30 +60,27 @@ function Overview({ state, setState, goto }) {
     <div className="canvas">
       <div className="view-head">
         <div>
-          <div className="eyebrow">{DATA.projectLabel} · Round {state.roundIndex || 1} · Overview</div>
-          <h1>Question <em>overview</em></h1>
+          <div className="eyebrow">{copy.overview.eyebrow(state.roundIndex || 1)}</div>
+          <h1>{copy.overview.title}</h1>
         </div>
-        <div className="lede">
-          Each card is one question in the current round. Rated cards show your scores for audio quality (AQ) and prompt following (PF).
-          True A / B identities are revealed once all questions are answered.
-        </div>
+        <div className="lede">{copy.overview.lede}</div>
       </div>
 
       <div className="stats-strip">
         <div className="stat">
-          <div className="label">Answered</div>
+          <div className="label">{copy.overview.answered}</div>
           <div className="value"><em>{answered}</em><span className="suffix">/ {roundSize}</span></div>
         </div>
         <div className="stat">
-          <div className="label">Participant · Round</div>
+          <div className="label">{copy.overview.participantRound}</div>
           <div className="value" style={{fontSize: 22, fontFamily: "var(--font-serif)"}}>
-            {state.participant || "—"} <span className="suffix">· R{state.roundIndex || 1}</span>
+            {state.participant || "—"} <span className="suffix">· {lang === "zh" ? `第 ${state.roundIndex || 1} 輪` : `R${state.roundIndex || 1}`}</span>
           </div>
         </div>
         <div className="stat">
-          <div className="label">Status</div>
+          <div className="label">{copy.overview.status}</div>
           <div className="value" style={{fontSize: 22, fontFamily: "var(--font-serif)"}}>
-            {answered === roundSize && roundSize > 0 ? "Ready to reveal" : answered === 0 ? "Not started" : "In progress"}
+            {answered === roundSize && roundSize > 0 ? copy.overview.readyToReveal : answered === 0 ? copy.overview.notStarted : copy.overview.inProgress}
           </div>
         </div>
       </div>
@@ -108,7 +106,7 @@ function Overview({ state, setState, goto }) {
                   <div className="q-metric"><span>PF</span><strong>{formatVal(a.promptFollowing)}</strong></div>
                 </div>
               ) : (
-                <div className="q-pending">Not rated — click to open</div>
+                <div className="q-pending">{copy.overview.notRated}</div>
               )}
             </div>
           );
@@ -118,15 +116,15 @@ function Overview({ state, setState, goto }) {
       <div className="overview-actions">
         <div className="msg">
           {answered === roundSize && roundSize > 0 ? (
-            <><strong>All done.</strong> Ready to reveal A / B identities?</>
+            <><strong>{lang === "zh" ? "全部完成。" : "All done."}</strong> {copy.overview.allDone}</>
           ) : (
-            <><strong>{remaining}</strong> question{remaining === 1 ? "" : "s"} remaining — listen through before rating.</>
+            <>{copy.overview.remaining(remaining)}</>
           )}
         </div>
-        <div style={{display: "flex", gap: 8}}>
-          <button className="btn" onClick={() => goto("runner")}>Continue</button>
+        <div className="overview-actions-buttons">
+          <button className="btn" onClick={() => goto("runner")}>{copy.overview.continue}</button>
           <button className="btn btn-primary" onClick={() => goto("results")} disabled={answered < roundSize || roundSize === 0}>
-            Reveal results
+            {copy.overview.viewResults}
           </button>
         </div>
       </div>
@@ -168,7 +166,8 @@ function computeScores(answers, metric, leftL, rightL, questions) {
   return scores;
 }
 
-function MetricCard({ metric, answers, leftL, rightL, questions }) {
+function MetricCard({ metric, answers, leftL, rightL, questions, lang }) {
+  const copy = getText(lang);
   const dist = computeDist(answers, metric.key, leftL, rightL, questions);
   const scores = computeScores(answers, metric.key, leftL, rightL, questions);
   const leader = scores[leftL] === scores[rightL] ? null
@@ -178,7 +177,7 @@ function MetricCard({ metric, answers, leftL, rightL, questions }) {
     { key: `${leftL}_3`,  label: `${leftL} +3` },
     { key: `${leftL}_2`,  label: `${leftL} +2` },
     { key: `${leftL}_1`,  label: `${leftL} +1` },
-    { key: "tie",          label: "tie" },
+    { key: "tie",          label: copy.results.tie },
     { key: `${rightL}_1`, label: `${rightL} +1` },
     { key: `${rightL}_2`, label: `${rightL} +2` },
     { key: `${rightL}_3`, label: `${rightL} +3` },
@@ -193,19 +192,19 @@ function MetricCard({ metric, answers, leftL, rightL, questions }) {
       <div className="score-row">
         <div className={`score-card score-a ${leader === leftL ? "winner" : ""}`}>
           <div className="score-label">{leftL}</div>
-          <div className="score-value">{scores[leftL]}<span className="score-sub"> pts</span></div>
+          <div className="score-value">{scores[leftL]}<span className="score-sub"> {copy.results.points}</span></div>
           <div className="score-breakdown">
             +3 × {dist[`${leftL}_3`]} · +2 × {dist[`${leftL}_2`]} · +1 × {dist[`${leftL}_1`]}
           </div>
         </div>
         <div className="score-card score-tie">
-          <div className="score-label">Tie</div>
-          <div className="score-value">{dist.tie}<span className="score-sub"> Qs</span></div>
-          <div className="score-breakdown">about the same</div>
+          <div className="score-label">{copy.results.tie}</div>
+          <div className="score-value">{dist.tie}<span className="score-sub"> {copy.results.questionsUnit}</span></div>
+          <div className="score-breakdown">{copy.results.tieCaption}</div>
         </div>
         <div className={`score-card score-b ${leader === rightL ? "winner" : ""}`}>
           <div className="score-label">{rightL}</div>
-          <div className="score-value">{scores[rightL]}<span className="score-sub"> pts</span></div>
+          <div className="score-value">{scores[rightL]}<span className="score-sub"> {copy.results.points}</span></div>
           <div className="score-breakdown">
             +3 × {dist[`${rightL}_3`]} · +2 × {dist[`${rightL}_2`]} · +1 × {dist[`${rightL}_1`]}
           </div>
@@ -226,15 +225,17 @@ function MetricCard({ metric, answers, leftL, rightL, questions }) {
         })}
       </div>
       <div className="dist-legend">
-        <span className="a">← prefer {leftL}</span>
-        <span>tie</span>
-        <span className="b">prefer {rightL} →</span>
+        <span className="a">← {copy.results.preferLeft(leftL)}</span>
+        <span>{copy.results.tie.toLowerCase ? copy.results.tie.toLowerCase() : copy.results.tie}</span>
+        <span className="b">{copy.results.preferRight(rightL)} →</span>
       </div>
     </div>
   );
 }
 
-function Results({ state, setState, goto, finishAndStartNext }) {
+function Results({ state, setState, goto, finishAndStartNext, lang }) {
+  const copy = getText(lang);
+  const metrics = getMetrics(lang);
   useEffectOV(() => {
     if (!state.revealed) setState(s => ({ ...s, revealed: true }));
   }, []);
@@ -268,7 +269,7 @@ function Results({ state, setState, goto, finishAndStartNext }) {
       };
     });
     const summary = {};
-    METRICS.forEach(m => {
+    metrics.forEach(m => {
       summary[m.key] = {
         scores: computeScores(state.answers, m.key, leftL, rightL, questions),
         dist:   computeDist(state.answers, m.key, leftL, rightL, questions),
@@ -291,7 +292,7 @@ function Results({ state, setState, goto, finishAndStartNext }) {
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       totalQuestions: roundSize,      // kept for backwards-compat with any consumer reading this
       answeredQuestions: answered,
-      metrics: METRICS.map(m => m.key),
+      metrics: metrics.map(m => m.key),
       scale: "cmos-7-point (-3..+3; positive=A preferred, negative=B preferred)",
       log,
       summary,
@@ -302,7 +303,7 @@ function Results({ state, setState, goto, finishAndStartNext }) {
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    const safe = (state.participant || "anonymous").replace(/[^A-Za-z0-9_-]+/g, "_");
+    const safe = (state.participant || copy.common.anonymous).replace(/[^\p{Letter}\p{Number}_-]+/gu, "_");
     const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
     link.href = url;
     link.download = `${DATA.project}__${safe}__r${state.roundIndex || 1}__${ts}.json`;
@@ -325,55 +326,48 @@ function Results({ state, setState, goto, finishAndStartNext }) {
 
     // No cloud endpoint → download JSON, then still roll to next round
     if (!hasEndpoint) {
-      if (!confirm(`Export round ${state.roundIndex || 1} for "${state.participant}" and start the next round?`)) return;
+      if (!confirm(copy.results.exportConfirm(state.roundIndex || 1, state.participant))) return;
       downloadJSON(payload);
-      setSubmitState({ phase: "ok", message: `Round ${state.roundIndex || 1} exported (no cloud endpoint). Starting next round…` });
+      setSubmitState({ phase: "ok", message: copy.results.exported(state.roundIndex || 1) });
       setTimeout(() => handoffToNextRound(payload), 900);
       return;
     }
 
-    if (!confirm(`Submit round ${state.roundIndex || 1} for "${state.participant}"?`)) return;
+    if (!confirm(copy.results.submitConfirm(state.roundIndex || 1, state.participant))) return;
 
-    setSubmitState({ phase: "uploading", message: "Uploading…" });
+    setSubmitState({ phase: "uploading", message: copy.results.uploading });
     try {
       await uploadSubmission(payload, submitUrl);
-      setSubmitState({ phase: "ok", message: `Round ${state.roundIndex || 1} submitted · id ${payload.submissionId.slice(0, 8)}. Starting next round…` });
+      setSubmitState({ phase: "ok", message: copy.results.submitted(state.roundIndex || 1, payload.submissionId.slice(0, 8)) });
       setTimeout(() => handoffToNextRound(payload), 1200);
     } catch (err) {
       console.error("Upload failed", err);
       downloadJSON(payload);
       setSubmitState({
         phase: "err",
-        message: `Upload failed: ${err.message}. A JSON backup was downloaded — retry below, or hand the file to the coordinator.`,
+        message: copy.results.uploadFailed(err.message),
       });
     }
   };
 
   const retryUpload = async () => {
     const payload = buildPayload();
-    setSubmitState({ phase: "uploading", message: "Retrying upload…" });
+    setSubmitState({ phase: "uploading", message: copy.results.retrying });
     try {
       await uploadSubmission(payload, submitUrl);
-      setSubmitState({ phase: "ok", message: `Round ${state.roundIndex || 1} submitted · id ${payload.submissionId.slice(0, 8)}. Starting next round…` });
+      setSubmitState({ phase: "ok", message: copy.results.submitted(state.roundIndex || 1, payload.submissionId.slice(0, 8)) });
       setTimeout(() => handoffToNextRound(payload), 1200);
     } catch (err) {
-      setSubmitState({ phase: "err", message: `Retry failed: ${err.message}. Use the JSON backup file that was already downloaded.` });
+      setSubmitState({ phase: "err", message: copy.results.retryFailed(err.message) });
     }
   };
-
-  const aqScores = computeScores(state.answers, "audioQuality",    leftL, rightL, questions);
-  const pfScores = computeScores(state.answers, "promptFollowing", leftL, rightL, questions);
-  const aqLeader = aqScores[leftL] === aqScores[rightL] ? "tie"
-    : aqScores[leftL] > aqScores[rightL] ? leftL : rightL;
-  const pfLeader = pfScores[leftL] === pfScores[rightL] ? "tie"
-    : pfScores[leftL] > pfScores[rightL] ? leftL : rightL;
 
   if (roundSize === 0) {
     return (
       <div className="canvas">
         <div className="results-head">
           <div className="title-block">
-            <h1>No round in progress</h1>
+            <h1>{copy.results.noRound}</h1>
           </div>
         </div>
       </div>
@@ -384,26 +378,26 @@ function Results({ state, setState, goto, finishAndStartNext }) {
     <div className="canvas">
       <div className="results-head">
         <div className="title-block">
-          <div className="eyebrow">{DATA.projectLabel} · Round {state.roundIndex || 1} · Reveal · {state.participant || "anonymous"}</div>
-          <h1>Results · <em>AQ: {aqLeader}</em> · <em>PF: {pfLeader}</em></h1>
+          <div className="eyebrow">{copy.results.eyebrow(state.roundIndex || 1, state.participant || copy.common.anonymous)}</div>
+          <h1>{copy.results.title}</h1>
         </div>
         <div className="summary-metric">
           <div className="num">{answered}<span className="denom"> / {roundSize}</span></div>
-          <div className="caption">Questions rated</div>
+          <div className="caption">{copy.results.questionsRated}</div>
         </div>
       </div>
 
-      {METRICS.map(m => (
-        <MetricCard key={m.key} metric={m} answers={state.answers} leftL={leftL} rightL={rightL} questions={questions} />
+      {metrics.map(m => (
+        <MetricCard key={m.key} metric={m} answers={state.answers} leftL={leftL} rightL={rightL} questions={questions} lang={lang} />
       ))}
 
       <div className="reveal-table">
         <div className="reveal-row header">
-          <div>#</div>
-          <div>Question</div>
-          <div>AQ</div>
-          <div>PF</div>
-          <div>Identity · A / B</div>
+          <div>{copy.results.table.number}</div>
+          <div>{copy.results.table.question}</div>
+          <div>{copy.results.table.aq}</div>
+          <div>{copy.results.table.pf}</div>
+          <div>{copy.results.table.identity}</div>
         </div>
         {questions.map(q => {
           const a = state.answers[q.id] || {};
@@ -427,25 +421,12 @@ function Results({ state, setState, goto, finishAndStartNext }) {
 
       <div className="meta-card">
         <div className="msg">
-          {hasEndpoint ? (
-            <>
-              <strong>Submit this round.</strong> On success the full log uploads to the coordinator, then a
-              new round with a different set of clips starts automatically — feel free to keep going as long as you like.
-            </>
-          ) : (
-            <>
-              <strong>Export this round.</strong> No cloud endpoint is configured for this deployment —
-              please export the JSON and hand the file back to the coordinator. A new round will start after export.
-            </>
-          )}
+          {hasEndpoint ? copy.results.submitMessage : copy.results.exportMessage}
         </div>
         <div className="actions">
-          <button className="btn" onClick={exportJSON} disabled={submitState.phase === "uploading"}>
-            Export JSON {hasEndpoint ? "(backup)" : ""}
-          </button>
           {submitState.phase === "err" ? (
             <button className="btn btn-primary" onClick={retryUpload}>
-              Retry upload
+              {copy.results.retry}
             </button>
           ) : (
             <button
@@ -454,12 +435,15 @@ function Results({ state, setState, goto, finishAndStartNext }) {
               disabled={submitState.phase === "uploading" || submitState.phase === "ok"}
             >
               {submitState.phase === "uploading"
-                ? "Uploading…"
+                ? copy.results.uploading
                 : hasEndpoint
-                  ? "Submit & start next round"
-                  : "Export JSON & start next round"}
+                  ? copy.results.submit
+                  : copy.results.downloadAndNext}
             </button>
           )}
+          <button className="btn" onClick={exportJSON} disabled={submitState.phase === "uploading"}>
+            {hasEndpoint ? copy.results.backup : copy.results.downloadOnly}
+          </button>
         </div>
         {submitState.phase !== "idle" && (
           <div className={`submit-status submit-status-${submitState.phase}`}>

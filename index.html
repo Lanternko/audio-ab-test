@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tonewright · Audio A/B Blind Listening Test</title>
+  <title>Audio A/B Test · Blind Listening</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -48,30 +48,242 @@
 
     // Schema v3: introduced round sampling (selection + abMap) and
     // per-participant seen tracking so repeat rounds get different clips.
-    const STORAGE_KEY = "tonewright-state-v3";
-    const SEEN_KEY = "tonewright-seen-v3";
+    const STORAGE_KEY = "audio-ab-test-state-v4";
+    const LEGACY_STORAGE_KEYS = ["tonewright-state-v3"];
+    const SEEN_KEY = "audio-ab-test-seen-v4";
+    const LEGACY_SEEN_KEYS = ["tonewright-seen-v3"];
+    const VALID_DATA_KEYS = new Set([DATA.project, ...LEGACY_PROJECT_KEYS]);
 
     function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
+      for (const key of [STORAGE_KEY, ...LEGACY_STORAGE_KEYS]) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
           const parsed = JSON.parse(raw);
-          if (parsed.dataKey === DATA.project) return parsed;
-        }
-      } catch (e) { }
+          if (!parsed.dataKey || VALID_DATA_KEYS.has(parsed.dataKey)) return parsed;
+        } catch (e) { }
+      }
       return null;
     }
 
     function loadSeen() {
-      try {
-        const raw = localStorage.getItem(SEEN_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch (e) { }
+      for (const key of [SEEN_KEY, ...LEGACY_SEEN_KEYS]) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) return JSON.parse(raw);
+        } catch (e) { }
+      }
       return {};
     }
 
     function saveSeen(seen) {
       try { localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) { }
+    }
+
+    function LanguageSwitch({ lang, setLang }) {
+      return (
+        <div className="lang-switch" role="group" aria-label="Language switch">
+          {LANG_OPTIONS.map(option => (
+            <button
+              key={option.key}
+              type="button"
+              className={lang === option.key ? "active" : ""}
+              onClick={() => setLang(option.key)}
+              aria-pressed={lang === option.key}
+              title={option.ariaLabel}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    function Welcome({ startRound, suggestedName, lang, setLang }) {
+      const copy = getText(lang);
+      const [name, setName] = useState(suggestedName || "");
+      const start = () => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        startRound(trimmed);
+      };
+      return (
+        <div className="canvas welcome-canvas">
+          <div className="welcome-card">
+            <div className="eyebrow">{copy.welcome.eyebrow}</div>
+            <h1>{copy.welcome.titleLead} <em>{copy.welcome.heroName}</em></h1>
+            <div className="welcome-lang">
+              <span className="welcome-lang-label">{lang === "zh" ? "介面語言" : "Interface language"}</span>
+              <LanguageSwitch lang={lang} setLang={setLang} />
+            </div>
+            <p>{copy.welcome.intro(DATA.roundSize)}</p>
+            <ul>
+              {getMetrics(lang).map(metric => (
+                <li key={metric.key}>
+                  <strong>{metric.label}</strong> {copy.welcome.criteria[metric.key]}
+                </li>
+              ))}
+            </ul>
+            <p>
+              {copy.welcome.blindNotice(DATA.roundSize, DATA.pool.length)} {copy.welcome.keepGoing}
+            </p>
+            <label htmlFor="participant-name">{copy.welcome.nameLabel}</label>
+            <input
+              id="participant-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") start(); }}
+              placeholder={copy.welcome.namePlaceholder}
+              autoFocus
+            />
+            <button
+              className="btn btn-primary welcome-start"
+              disabled={!name.trim()}
+              onClick={start}
+            >
+              {copy.welcome.start} →
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const initial = loadState() || {};
+      const [lang, setLang] = useState(initial.lang || detectPreferredLang());
+      const [view, setView] = useState(initial.view || "runner");
+      const [state, setState] = useState({
+        participant: initial.participant || "",
+        startedAt: initial.startedAt || null,
+        roundIndex: initial.roundIndex || 0,
+        selection: initial.selection || [],
+        abMap: initial.abMap || [],
+        poolResetThisRound: initial.poolResetThisRound || false,
+        currentIdx: initial.currentIdx || 0,
+        answers: initial.answers || {},
+        revealed: initial.revealed || false,
+      });
+      const copy = getText(lang);
+
+      useEffect(() => {
+        document.documentElement.lang = lang === "zh" ? "zh-Hant" : "en";
+      }, [lang]);
+
+      useEffect(() => {
+        const payload = {
+          lang,
+          view,
+          participant: state.participant,
+          startedAt: state.startedAt,
+          roundIndex: state.roundIndex,
+          selection: state.selection,
+          abMap: state.abMap,
+          poolResetThisRound: state.poolResetThisRound,
+          currentIdx: state.currentIdx,
+          answers: state.answers,
+          revealed: state.revealed,
+          dataKey: DATA.project,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      }, [lang, view, state]);
+
+      const goto = (v) => { setView(v); window.scrollTo({ top: 0, behavior: "smooth" }); };
+
+      // Begin a fresh round for this participant (samples from the pool).
+      const startRound = (name, prevRoundIndex = 0) => {
+        const { indices, poolReset } = planRound(name);
+        setState({
+          participant: name,
+          startedAt: new Date().toISOString(),
+          roundIndex: prevRoundIndex + 1,
+          selection: indices,
+          abMap: makeAbMap(indices.length),
+          poolResetThisRound: poolReset,
+          currentIdx: 0,
+          answers: {},
+          revealed: false,
+        });
+        setView("runner");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      // Called by Results after a successful submit — record the round's
+      // clips as seen, then sample & start the next round for the same
+      // participant.
+      const finishAndStartNext = (submittedClipIds, poolResetHappened) => {
+        recordRound(state.participant, submittedClipIds, poolResetHappened);
+        startRound(state.participant, state.roundIndex || 0);
+      };
+
+      const switchParticipant = () => {
+        setState({
+          participant: "", startedAt: null, roundIndex: 0,
+          selection: [], abMap: [], poolResetThisRound: false,
+          currentIdx: 0, answers: {}, revealed: false,
+        });
+      };
+
+      const roundBadge = state.roundIndex > 0
+        ? (lang === "zh" ? `第 ${state.roundIndex} 輪` : `${copy.common.roundBadge}${state.roundIndex}`)
+        : null;
+
+      // Welcome screen shown whenever participant name is empty
+      if (!state.participant) {
+        return (
+          <div className="app">
+            <div className="topbar">
+              <div className="topbar-inner">
+                <div className="brand">
+                  <span className="brand-dot" />
+                  {DATA.appName}
+                  <span className="sub">{DATA.projectLabel}</span>
+                </div>
+              </div>
+            </div>
+            <Welcome startRound={(name) => startRound(name, 0)} suggestedName={latestParticipantName()} lang={lang} setLang={setLang} />
+          </div>
+        );
+      }
+
+      return (
+        <div className="app">
+          <div className="topbar">
+            <div className="topbar-inner">
+              <div className="brand">
+                <span className="brand-dot" />
+                {DATA.appName}
+                <span className="sub">
+                  {DATA.projectLabel} ·{" "}
+                  <span className="participant-chip">
+                    {state.participant}
+                    {roundBadge && <span className="round-badge">{roundBadge}</span>}
+                    <button
+                      type="button"
+                      className="switch-btn"
+                      onClick={switchParticipant}
+                      title={copy.common.switchParticipant}
+                      aria-label={copy.common.switchParticipant}
+                    >×</button>
+                  </span>
+                </span>
+              </div>
+              <div className="topbar-controls">
+                <div className="nav">
+                  <button className={view === "runner" ? "active" : ""} onClick={() => goto("runner")}>{copy.nav.evaluate}</button>
+                  <button className={view === "overview" ? "active" : ""} onClick={() => goto("overview")}>{copy.nav.overview}</button>
+                  <button className={view === "results" ? "active" : ""} onClick={() => goto("results")}>{copy.nav.results}</button>
+                </div>
+                <LanguageSwitch lang={lang} setLang={setLang} />
+              </div>
+            </div>
+          </div>
+
+          {view === "runner" && <Runner state={state} setState={setState} goto={goto} lang={lang} />}
+          {view === "overview" && <Overview state={state} setState={setState} goto={goto} lang={lang} />}
+          {view === "results" && <Results state={state} setState={setState} goto={goto} finishAndStartNext={finishAndStartNext} lang={lang} />}
+        </div>
+      );
     }
 
     const participantKey = (name) => (name || "").trim().toLowerCase();
@@ -120,177 +332,6 @@
         lastUsedAt: new Date().toISOString(),
       };
       saveSeen(seen);
-    }
-
-    function Welcome({ startRound, suggestedName }) {
-      const [name, setName] = useState(suggestedName || "");
-      const start = () => {
-        const trimmed = name.trim();
-        if (!trimmed) return;
-        startRound(trimmed);
-      };
-      return (
-        <div className="canvas welcome-canvas">
-          <div className="welcome-card">
-            <div className="eyebrow">{DATA.projectLabel} · Audio A/B Blind Test</div>
-            <h1>Welcome to <em>Tonewright</em></h1>
-            <p>
-              You will listen to <strong>{DATA.roundSize}</strong> pairs of audio clips labelled
-              <strong> A</strong> and <strong> B</strong>. For each pair, rate two dimensions on a
-              <strong> 7-point CMOS scale (−3 … +3)</strong>:
-            </p>
-            <ul>
-              <li><strong>Audio Quality</strong> — overall perceptual quality: artefacts, clarity, fidelity.</li>
-              <li><strong>Prompt Following</strong> — how faithfully each clip matches the written prompt shown above the players.</li>
-            </ul>
-            <p>
-              A and B identities are hidden during each round. After you submit, a new round starts
-              automatically with a fresh random sample of {DATA.roundSize} clips from the {DATA.pool.length}-clip pool —
-              feel free to do as many rounds as you'd like.
-            </p>
-            <label htmlFor="participant-name">Your name</label>
-            <input
-              id="participant-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") start(); }}
-              placeholder="e.g. Alice Chen"
-              autoFocus
-            />
-            <button
-              className="btn btn-primary welcome-start"
-              disabled={!name.trim()}
-              onClick={start}
-            >
-              Start listening →
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    function App() {
-      const initial = loadState() || {};
-      const [view, setView] = useState(initial.view || "runner");
-      const [state, setState] = useState({
-        participant: initial.participant || "",
-        startedAt: initial.startedAt || null,
-        roundIndex: initial.roundIndex || 0,
-        selection: initial.selection || [],
-        abMap: initial.abMap || [],
-        poolResetThisRound: initial.poolResetThisRound || false,
-        currentIdx: initial.currentIdx || 0,
-        answers: initial.answers || {},
-        revealed: initial.revealed || false,
-      });
-
-      useEffect(() => {
-        const payload = {
-          view,
-          participant: state.participant,
-          startedAt: state.startedAt,
-          roundIndex: state.roundIndex,
-          selection: state.selection,
-          abMap: state.abMap,
-          poolResetThisRound: state.poolResetThisRound,
-          currentIdx: state.currentIdx,
-          answers: state.answers,
-          revealed: state.revealed,
-          dataKey: DATA.project,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      }, [view, state]);
-
-      const goto = (v) => { setView(v); window.scrollTo({ top: 0, behavior: "smooth" }); };
-
-      // Begin a fresh round for this participant (samples from the pool).
-      const startRound = (name, prevRoundIndex = 0) => {
-        const { indices, poolReset } = planRound(name);
-        setState({
-          participant: name,
-          startedAt: new Date().toISOString(),
-          roundIndex: prevRoundIndex + 1,
-          selection: indices,
-          abMap: makeAbMap(indices.length),
-          poolResetThisRound: poolReset,
-          currentIdx: 0,
-          answers: {},
-          revealed: false,
-        });
-        setView("runner");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      };
-
-      // Called by Results after a successful submit — record the round's
-      // clips as seen, then sample & start the next round for the same
-      // participant.
-      const finishAndStartNext = (submittedClipIds, poolResetHappened) => {
-        recordRound(state.participant, submittedClipIds, poolResetHappened);
-        startRound(state.participant, state.roundIndex || 0);
-      };
-
-      const switchParticipant = () => {
-        setState({
-          participant: "", startedAt: null, roundIndex: 0,
-          selection: [], abMap: [], poolResetThisRound: false,
-          currentIdx: 0, answers: {}, revealed: false,
-        });
-      };
-
-      // Welcome screen shown whenever participant name is empty
-      if (!state.participant) {
-        return (
-          <div className="app">
-            <div className="topbar">
-              <div className="topbar-inner">
-                <div className="brand">
-                  <span className="brand-dot" />
-                  Tonewright
-                  <span className="sub">{DATA.projectLabel}</span>
-                </div>
-              </div>
-            </div>
-            <Welcome startRound={(name) => startRound(name, 0)} suggestedName={latestParticipantName()} />
-          </div>
-        );
-      }
-
-      return (
-        <div className="app">
-          <div className="topbar">
-            <div className="topbar-inner">
-              <div className="brand">
-                <span className="brand-dot" />
-                Tonewright
-                <span className="sub">
-                  {DATA.projectLabel} ·{" "}
-                  <span className="participant-chip">
-                    {state.participant}
-                    {state.roundIndex > 0 && <span className="round-badge">R{state.roundIndex}</span>}
-                    <button
-                      type="button"
-                      className="switch-btn"
-                      onClick={switchParticipant}
-                      title="Switch to a different participant"
-                      aria-label="Switch participant"
-                    >×</button>
-                  </span>
-                </span>
-              </div>
-              <div className="nav">
-                <button className={view === "runner" ? "active" : ""} onClick={() => goto("runner")}>Evaluate</button>
-                <button className={view === "overview" ? "active" : ""} onClick={() => goto("overview")}>Overview</button>
-                <button className={view === "results" ? "active" : ""} onClick={() => goto("results")}>Results</button>
-              </div>
-            </div>
-          </div>
-
-          {view === "runner" && <Runner state={state} setState={setState} goto={goto} />}
-          {view === "overview" && <Overview state={state} setState={setState} goto={goto} />}
-          {view === "results" && <Results state={state} setState={setState} goto={goto} finishAndStartNext={finishAndStartNext} />}
-        </div>
-      );
     }
 
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);

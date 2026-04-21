@@ -122,7 +122,6 @@ body {
 }
 
 .nav {
-  margin-left: auto;
   display: flex; align-items: center; gap: 4px;
   font-family: var(--font-sans);
   font-size: 13px;
@@ -138,6 +137,41 @@ body {
 .nav button.active {
   background: var(--accent-tint);
   color: var(--accent-ink);
+}
+.topbar-controls {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 3px;
+}
+.lang-switch button {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+.lang-switch button:hover {
+  color: var(--text-primary);
+}
+.lang-switch button.active {
+  background: var(--bg-surface);
+  color: var(--accent-ink);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
 .participant-chip {
   display: inline-flex;
@@ -411,6 +445,23 @@ body {
   color: var(--accent);
   font-weight: 400;
 }
+.welcome-lang {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  background: var(--bg-sunken);
+  border-radius: 12px;
+}
+.welcome-lang-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
 .welcome-card p {
   font-family: var(--font-sans);
   font-size: 14px;
@@ -470,6 +521,42 @@ body {
   width: 100%;
   padding: 14px;
   font-size: 15px;
+}
+
+@media (max-width: 860px) {
+  .topbar-inner {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .topbar-controls {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .canvas {
+    padding: 28px 16px 60px;
+  }
+  .canvas-compact {
+    padding: 16px;
+  }
+  .welcome-canvas {
+    padding: 36px 16px 48px;
+  }
+  .welcome-card {
+    padding: 28px 24px;
+  }
+  .welcome-card h1 {
+    font-size: 32px;
+  }
+  .welcome-lang {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 /* ── Scrollbar (webkit) ───────────────────── */

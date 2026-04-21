@@ -1,4 +1,4 @@
-# Tonewright — Audio A/B Blind Listening Test
+# Audio A/B Test — Blind Listening Interface
 
 A browser-based pairwise listening test for evaluating audio variants (e.g., two model versions). 10 MusicCaps clips, 7-point CMOS scale (−3 … +3), two metrics per clip: **Audio Quality** and **Prompt Following**.
 
@@ -26,11 +26,12 @@ Then open <http://localhost:8000/>.
    - **Audio Quality** (−3 … +3) — overall perceptual quality.
    - **Prompt Following** (−3 … +3) — faithfulness to the prompt shown above the players.
 3. After the last question, the **Results** page reveals the true identities (`p7v1` / `p8v1`) and shows weighted-score summaries per metric.
-4. Participant clicks **Submit & start next round** — the full log POSTs to the cloud endpoint (Google Sheets via Apps Script); a **new round immediately starts with a different sample of clips**. They can keep going indefinitely.
+4. Participant clicks **Submit results** — the full log POSTs to the cloud endpoint (Google Sheets via Apps Script); a **new round immediately starts with a different sample of clips**. They can keep going indefinitely.
    - Clips already seen by this participant are **excluded** from the next sample (tracked per-name in `localStorage`). When the unseen pool is smaller than `roundSize`, the seen set quietly resets so rounds never stall — `poolResetThisRound: true` is logged so you can filter in analysis.
-   - If `SUBMIT_URL` is empty the Submit button falls back to "Export JSON & start next round" — a file is downloaded, the next round still starts.
+   - If `SUBMIT_URL` is empty the primary button falls back to "Download & next round" — a file is downloaded, the next round still starts.
    - If an upload fails, a JSON backup auto-downloads and the UI shows a **Retry upload** button. State isn't lost.
    - Click the **×** next to the name in the topbar to log out / switch participant.
+   - The tester-facing UI includes an **English / 中文** language toggle; only the interface chrome is translated. Prompt text stays in its original language.
 
 ## Cloud submission setup (Google Apps Script + Sheets)
 

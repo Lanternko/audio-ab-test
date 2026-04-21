@@ -1,10 +1,11 @@
 // Runner screen: the A/B testing UI
 // Each Transport owns its own <audio> element — enables real seek + clean reset across questions.
-// A shared "tonewright-play" event implements the "only one plays at a time" mutex.
+// A shared "audio-ab-test-play" event implements the "only one plays at a time" mutex.
 
 const { useState, useEffect, useRef, useMemo } = React;
 
-function Transport({ src, side, trueLabel, labelSide, revealed }) {
+function Transport({ src, side, trueLabel, labelSide, revealed, lang }) {
+  const copy = getText(lang);
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -22,7 +23,7 @@ function Transport({ src, side, trueLabel, labelSide, revealed }) {
     const onLoaded = () => setDuration(isFinite(a.duration) ? a.duration : 0);
     const onPlay = () => {
       setPlaying(true);
-      window.dispatchEvent(new CustomEvent("tonewright-play", { detail: a }));
+      window.dispatchEvent(new CustomEvent("audio-ab-test-play", { detail: a }));
     };
     const onPause = () => setPlaying(false);
     const onEnded = () => { setPlaying(false); };
@@ -35,7 +36,7 @@ function Transport({ src, side, trueLabel, labelSide, revealed }) {
     a.addEventListener("ended", onEnded);
 
     const onClaim = (e) => { if (e.detail !== a) { try { a.pause(); } catch (err) {} } };
-    window.addEventListener("tonewright-play", onClaim);
+    window.addEventListener("audio-ab-test-play", onClaim);
 
     return () => {
       a.removeEventListener("timeupdate", onTime);
@@ -44,7 +45,7 @@ function Transport({ src, side, trueLabel, labelSide, revealed }) {
       a.removeEventListener("play", onPlay);
       a.removeEventListener("pause", onPause);
       a.removeEventListener("ended", onEnded);
-      window.removeEventListener("tonewright-play", onClaim);
+      window.removeEventListener("audio-ab-test-play", onClaim);
       try { a.pause(); } catch (err) {}
     };
   }, []);
@@ -109,17 +110,17 @@ function Transport({ src, side, trueLabel, labelSide, revealed }) {
           {revealed && trueLabel ? (
             <span className="identity-pill" data-side={labelSide}>{trueLabel}</span>
           ) : (
-            <span className="hint">Blind sample</span>
+            <span className="hint">{copy.runner.blindSample}</span>
           )}
         </div>
         <button className="btn" onClick={toggle}>
           <span dangerouslySetInnerHTML={{__html: playing ? icons.pause : icons.play}} />
-          {playing ? `Pause ${side}` : `Play ${side}`}{revealed && trueLabel ? ` · ${trueLabel}` : ""}
+          {playing ? `${copy.runner.pause} ${side}` : `${copy.runner.play} ${side}`}{revealed && trueLabel ? ` · ${trueLabel}` : ""}
         </button>
       </div>
 
       <div className="transport">
-        <button className="play-btn" onClick={toggle} aria-label={playing ? "Pause" : "Play"}>
+        <button className="play-btn" onClick={toggle} aria-label={playing ? copy.runner.pause : copy.runner.play}>
           <span dangerouslySetInnerHTML={{__html: playing ? icons.pause : icons.play}} />
         </button>
         <span className="time">{fmt(elapsed)}</span>
@@ -148,7 +149,8 @@ function Transport({ src, side, trueLabel, labelSide, revealed }) {
   );
 }
 
-function Ticker({ total, current, answers, onJump }) {
+function Ticker({ total, current, answers, onJump, lang }) {
+  const copy = getText(lang);
   return (
     <div>
       <div className="ticker">
@@ -163,20 +165,22 @@ function Ticker({ total, current, answers, onJump }) {
               type="button"
               className={`tick ${answered ? "done" : ""} ${isCurrent ? "current" : ""}`}
               onClick={() => onJump && onJump(i)}
-              aria-label={`Jump to question ${idx}`}
-              title={`Question ${idx}${answered ? " (rated)" : ""}`}
+              aria-label={copy.runner.jumpToQuestion(idx, answered)}
+              title={copy.runner.jumpToQuestion(idx, answered)}
             />
           );
         })}
       </div>
       <div className="ticker-label">
-        {String(current).padStart(2,"0")} / {String(total).padStart(2,"0")} · Progress
+        {String(current).padStart(2,"0")} / {String(total).padStart(2,"0")} · {lang === "zh" ? "進度" : "Progress"}
       </div>
     </div>
   );
 }
 
-function CmosScale({ label, hint, value, onChange }) {
+function CmosScale({ label, hint, value, onChange, lang }) {
+  const copy = getText(lang);
+  const options = getCmosOptions(lang);
   return (
     <div className="cmos-row">
       <div className="cmos-meta">
@@ -184,9 +188,9 @@ function CmosScale({ label, hint, value, onChange }) {
         <div className="cmos-hint">{hint}</div>
       </div>
       <div className="cmos-track">
-        <span className="cmos-end left">A much better</span>
+        <span className="cmos-end left">{copy.cmos.leftEnd}</span>
         <div className="cmos-buttons">
-          {CMOS_OPTIONS.map(opt => (
+          {options.map(opt => (
             <button
               key={opt.val}
               type="button"
@@ -199,13 +203,15 @@ function CmosScale({ label, hint, value, onChange }) {
             </button>
           ))}
         </div>
-        <span className="cmos-end right">B much better</span>
+        <span className="cmos-end right">{copy.cmos.rightEnd}</span>
       </div>
     </div>
   );
 }
 
-function Runner({ state, setState, goto }) {
+function Runner({ state, setState, goto, lang }) {
+  const copy = getText(lang);
+  const metrics = getMetrics(lang);
   const roundSize = state.selection ? state.selection.length : 0;
 
   // Edge case: state shows a participant but no round selected yet.
@@ -216,9 +222,9 @@ function Runner({ state, setState, goto }) {
       <div className="canvas canvas-compact">
         <div className="runner-head">
           <div>
-            <h1>No round in progress</h1>
+            <h1>{copy.runner.noRound}</h1>
             <div className="muted sans" style={{fontSize:13, marginTop:4}}>
-              Click the × next to your name in the top bar to restart from the Welcome screen.
+              {copy.runner.restartHint}
             </div>
           </div>
         </div>
@@ -268,58 +274,59 @@ function Runner({ state, setState, goto }) {
     <div className="canvas canvas-compact">
       <div className="runner-head">
         <div>
-          <div className="slug">{DATA.projectLabel} · Round {state.roundIndex || 1} · Question {q.id} / {roundSize}</div>
-          <h1>{q.title}<span className="dim" style={{fontWeight:400, marginLeft:10, fontSize:22}}>·</span> <em>A vs B</em></h1>
+          <div className="slug">{copy.runner.slug(state.roundIndex || 1, q.id, roundSize)}</div>
+          <h1>{q.title}<span className="dim" style={{fontWeight:400, marginLeft:10, fontSize:22}}>·</span> <em>{copy.runner.pairTitle}</em></h1>
         </div>
-        <Ticker total={roundSize} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} />
-        <div className="head-actions">
-          <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
-            <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> Previous
-          </button>
-          <button className="btn btn-primary" onClick={() => {
-            if (state.currentIdx === roundSize - 1) goto("results");
-            else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
-          }} disabled={!hasBoth}>
-            {state.currentIdx === roundSize - 1 ? "View results" : "Next"} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
-          </button>
-        </div>
+        <Ticker total={roundSize} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} lang={lang} />
       </div>
 
       <div className="prompt-box">
-        <span className="prompt-tag">Prompt</span>
+        <span className="prompt-tag">{copy.runner.promptTag}</span>
         <span className="prompt-text">{q.desc}</span>
       </div>
 
       <div className="pair">
-        <Transport key={`${state.roundIndex}-${q.id}-A`} src={q.aFile} side="A" trueLabel={q.aLabel} labelSide={sideOf(q.aLabel)} revealed={state.revealed} />
-        <Transport key={`${state.roundIndex}-${q.id}-B`} src={q.bFile} side="B" trueLabel={q.bLabel} labelSide={sideOf(q.bLabel)} revealed={state.revealed} />
+        <Transport key={`${state.roundIndex}-${q.id}-A`} src={q.aFile} side="A" trueLabel={q.aLabel} labelSide={sideOf(q.aLabel)} revealed={state.revealed} lang={lang} />
+        <Transport key={`${state.roundIndex}-${q.id}-B`} src={q.bFile} side="B" trueLabel={q.bLabel} labelSide={sideOf(q.bLabel)} revealed={state.revealed} lang={lang} />
       </div>
 
       <div className="cmos-judgement">
-        {METRICS.map(m => (
+        {metrics.map(m => (
           <CmosScale
             key={m.key}
             label={m.label}
             hint={m.hint}
             value={answer[m.key]}
             onChange={(v) => setMetric(m.key, v)}
+            lang={lang}
           />
         ))}
       </div>
 
       <div className="footer-bar">
-        <div className={`status ${hasBoth ? "ready" : "partial"}`}>
-          <span className="dot" />
-          {hasBoth ? "Rated · ready for next" : "Rate both dimensions to continue"}
-        </div>
-        <div className="shortcuts">
-          <span><span className="kbd">←</span> Prev</span>
-          <span><span className="kbd">→</span> Next</span>
-          <span>{answeredCount} / {roundSize} answered</span>
+        <div className="footer-copy">
+          <div className={`status ${hasBoth ? "ready" : "partial"}`}>
+            <span className="dot" />
+            {hasBoth ? copy.runner.ready : copy.runner.partial}
+          </div>
+          <div className="footer-meta">{copy.runner.answered(answeredCount, roundSize)}</div>
         </div>
         <div className="nav-actions">
+          <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
+            <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> {copy.runner.previous}
+          </button>
           <button className="btn btn-ghost" onClick={() => goto("overview")}>
-            <span dangerouslySetInnerHTML={{__html: icons.grid}} /> Question list
+            <span dangerouslySetInnerHTML={{__html: icons.grid}} /> {copy.runner.overview}
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              if (state.currentIdx === roundSize - 1) goto("results");
+              else setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
+            }}
+            disabled={!hasBoth}
+          >
+            {state.currentIdx === roundSize - 1 ? copy.runner.viewResults : copy.runner.next} <span dangerouslySetInnerHTML={{__html: icons.arrowR}} />
           </button>
         </div>
       </div>

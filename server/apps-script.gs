@@ -1,5 +1,5 @@
 /**
- * Tonewright submission receiver — Google Apps Script.
+ * Audio A/B Test submission receiver — Google Apps Script.
  *
  * Deploy:
  *   1. Create a Google Sheet. Copy its URL, keep the long ID (the string
