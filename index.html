@@ -82,13 +82,13 @@
 
     function LanguageSwitch({ lang, setLang }) {
       const toggle = () => setLang(lang === "en" ? "zh" : "en");
+      const oppositeLabel = lang === "en" ? "中文" : "EN";
       return (
-        <button type="button" className="lang-switch" onClick={toggle} aria-label="Toggle language">
-          {LANG_OPTIONS.map(option => (
-            <span key={option.key} className={lang === option.key ? "active" : ""}>
-              {option.label}
-            </span>
-          ))}
+        <button type="button" className="lang-toggle" onClick={toggle} aria-label={`Switch to ${oppositeLabel}`}>
+          <span className={`lang-track ${lang === "zh" ? "on" : ""}`}>
+            <span className="lang-thumb" />
+          </span>
+          <span className="lang-toggle-label">{oppositeLabel}</span>
         </button>
       );
     }
@@ -134,6 +134,9 @@
             >
               {copy.welcome.start} →
             </button>
+            <div className="welcome-lang-footer">
+              <LanguageSwitch lang={lang} setLang={setLang} />
+            </div>
           </div>
         </div>
       );
@@ -229,7 +232,6 @@
                   {DATA.appName}
                   <span className="sub">{DATA.projectLabel}</span>
                 </div>
-                <LanguageSwitch lang={lang} setLang={setLang} />
               </div>
             </div>
             <Welcome startRound={(name) => startRound(name, 0)} suggestedName={latestParticipantName()} lang={lang} setLang={setLang} />
