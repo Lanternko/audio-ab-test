@@ -9,49 +9,49 @@ const APP_NAME = "Audio A/B Test";
 const POOL = [
   {
     clipId: "piano",
-    title: "piano",
+    title: "piano", titleZh: "鋼琴",
     prompt: "This is a piano cover of a glam metal music piece. The piece is being played gently on a keyboard with a grand piano sound. There is a calming, relaxing atmosphere in this piece.",
     files: { p7v1: "piano_p7v1.wav", p8v1: "piano_p8v1.wav" },
   },
   {
     clipId: "metal",
-    title: "metal",
+    title: "metal", titleZh: "重金屬",
     prompt: "This is the recording of a heavy metal music piece. There is a male vocalist singing melodically in the lead. The main tune is being played by the distorted electric guitar while the bass guitar is playing in the background. The rhythmic background consists of a simple acoustic drum beat. The atmosphere is aggressive.",
     files: { p7v1: "metal_p7v1.wav", p8v1: "metal_p8v1.wav" },
   },
   {
     clipId: "lofi",
-    title: "lofi",
+    title: "lofi", titleZh: "Lo-Fi",
     prompt: "The low quality recording features a live performance of a folk song that consists of an arpeggiated electric guitar melody played over groovy bass, punchy snare and shimmering cymbals. It sounds energetic and the recording is noisy and in mono.",
     files: { p7v1: "lofi_p7v1.wav", p8v1: "lofi_p8v1.wav" },
   },
   {
     clipId: "edm",
-    title: "edm",
+    title: "edm", titleZh: "電子舞曲",
     prompt: "This is an electronic dance music piece. There is a synth lead playing the main melody. The beat consists of a kick drum, clap, hi-hat and synthesized bass. The atmosphere is energetic and euphoric.",
     files: { p7v1: "edm_p7v1.wav", p8v1: "edm_p8v1.wav" },
   },
   {
     clipId: "cinematic",
-    title: "cinematic",
+    title: "cinematic", titleZh: "電影配樂",
     prompt: "This is a cinematic orchestral piece. There are strings playing a sweeping melody with brass accents. The piece builds in intensity with a dramatic crescendo. The atmosphere is epic and emotional.",
     files: { p7v1: "cinematic_p7v1.wav", p8v1: "cinematic_p8v1.wav" },
   },
   {
     clipId: "acoustic",
-    title: "acoustic",
+    title: "acoustic", titleZh: "木吉他",
     prompt: "A solo acoustic guitar piece with fingerpicking. Gentle and melancholic.",
     files: { p7v1: "acoustic_p7v1.wav", p8v1: "acoustic_p8v1.wav" },
   },
   {
     clipId: "jazz",
-    title: "jazz",
+    title: "jazz", titleZh: "爵士樂",
     prompt: "A smooth jazz piece with a saxophone lead, upright bass, and brushed drums. Studio quality recording with warm tones.",
     files: { p7v1: "jazz_p7v1.wav", p8v1: "jazz_p8v1.wav" },
   },
   {
     clipId: "ambient",
-    title: "ambient",
+    title: "ambient", titleZh: "氛圍音樂",
     prompt: "A dark ambient soundscape with drone pads, distant reverb, and subtle noise. Lo-fi texture with tape saturation.",
     files: { p7v1: "ambient_p7v1.wav", p8v1: "ambient_p8v1.wav" },
   },
@@ -103,11 +103,11 @@ const UI_TEXT = {
     metrics: {
       audioQuality: {
         label: "Audio Quality",
-        hint: "Overall perceptual quality: artefacts, clarity, fidelity.",
+        hint: "Does it sound clean and natural, or are there glitches and distortion?",
       },
       promptFollowing: {
         label: "Prompt Following",
-        hint: "How faithfully the clip matches the prompt shown above.",
+        hint: "Does the music match the description written above?",
       },
     },
     runner: {
@@ -219,11 +219,11 @@ const UI_TEXT = {
     metrics: {
       audioQuality: {
         label: "音質",
-        hint: "整體聽感品質，例如失真、清晰度與保真度。",
+        hint: "聽起來乾淨自然嗎？還是有雜音或失真？",
       },
       promptFollowing: {
         label: "Prompt 符合度",
-        hint: "音檔是否符合上方顯示的英文 prompt。",
+        hint: "音樂是否符合上方的文字描述？",
       },
     },
     runner: {
@@ -231,7 +231,7 @@ const UI_TEXT = {
       restartHint: "可點選上方姓名旁的 ×，回到歡迎頁重新開始。",
       jumpToQuestion: (idx, answered) => `跳到第 ${idx} 題${answered ? "（已評分）" : ""}`,
       slug: (round, question, total) => `${DATA.projectLabel} · 第 ${round} 輪 · 第 ${question} / ${total} 題`,
-      pairTitle: "A 對 B",
+      pairTitle: "A vs B",
       promptTag: "Prompt 原文",
       blindSample: "盲測樣本",
       play: "播放",
@@ -366,6 +366,7 @@ function buildQuestion(poolItem, posInRound, aIsV1, variants) {
   return {
     id: posInRound,
     title: poolItem.title,
+    titleZh: poolItem.titleZh || poolItem.title,
     clipId: poolItem.clipId,
     desc: poolItem.prompt,
     aFile: `audio/${aIsV1 ? f[v1] : f[v2]}`,

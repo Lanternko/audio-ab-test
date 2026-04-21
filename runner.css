@@ -178,6 +178,7 @@
 }
 .play-btn:hover { background: var(--accent-ink); }
 .play-btn:active { transform: scale(0.95); }
+.play-btn svg { margin-left: 2px; }
 
 .scrub {
   flex: 1;

@@ -110,9 +110,6 @@
       return (
         <div className="canvas welcome-canvas">
           <div className="welcome-card">
-            <div className="welcome-card-topbar">
-              <LanguageSwitch lang={lang} setLang={setLang} />
-            </div>
             <div className="eyebrow">{copy.welcome.eyebrow}</div>
             <h1>{copy.welcome.titleLead} <em>{copy.welcome.heroName}</em></h1>
             <p>{copy.welcome.intro(DATA.roundSize)}</p>
@@ -238,6 +235,7 @@
                   {DATA.appName}
                   <span className="sub">{DATA.projectLabel}</span>
                 </div>
+                <LanguageSwitch lang={lang} setLang={setLang} />
               </div>
             </div>
             <Welcome startRound={(name) => startRound(name, 0)} suggestedName={latestParticipantName()} lang={lang} setLang={setLang} />

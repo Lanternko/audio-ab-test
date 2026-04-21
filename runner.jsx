@@ -248,6 +248,13 @@ function Runner({ state, setState, goto, lang }) {
       if (e.key === "ArrowRight" && state.currentIdx < roundSize - 1) {
         setState(s => ({...s, currentIdx: s.currentIdx + 1 }));
       }
+      if (e.key === "Enter") {
+        const cur = state.answers[state.currentIdx + 1] || {};
+        const done = cur.audioQuality != null && cur.promptFollowing != null;
+        if (!done) return;
+        if (state.currentIdx === roundSize - 1) goto("results");
+        else setState(s => ({...s, currentIdx: s.currentIdx + 1}));
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -275,7 +282,7 @@ function Runner({ state, setState, goto, lang }) {
       <div className="runner-head">
         <div>
           <div className="slug">{copy.runner.slug(state.roundIndex || 1, q.id, roundSize)}</div>
-          <h1>{q.title}<span className="dim" style={{fontWeight:400, marginLeft:10, fontSize:22}}>·</span> <em>{copy.runner.pairTitle}</em></h1>
+          <h1>{lang === "zh" ? q.titleZh : q.title}<span className="dim" style={{fontWeight:400, marginLeft:10, fontSize:22}}>·</span> <em>{copy.runner.pairTitle}</em></h1>
         </div>
         <Ticker total={roundSize} current={q.id} answers={state.answers} onJump={(i) => setState(s => ({...s, currentIdx: i}))} lang={lang} />
       </div>
@@ -304,19 +311,9 @@ function Runner({ state, setState, goto, lang }) {
       </div>
 
       <div className="footer-bar">
-        <div className="footer-copy">
-          <div className={`status ${hasBoth ? "ready" : "partial"}`}>
-            <span className="dot" />
-            {hasBoth ? copy.runner.ready : copy.runner.partial}
-          </div>
-          <div className="footer-meta">{copy.runner.answered(answeredCount, roundSize)}</div>
-        </div>
         <div className="nav-actions">
           <button className="btn" onClick={() => setState(s => ({...s, currentIdx: Math.max(0, s.currentIdx - 1)}))} disabled={state.currentIdx === 0}>
             <span dangerouslySetInnerHTML={{__html: icons.arrowL}} /> {copy.runner.previous}
-          </button>
-          <button className="btn btn-ghost" onClick={() => goto("overview")}>
-            <span dangerouslySetInnerHTML={{__html: icons.grid}} /> {copy.runner.overview}
           </button>
           <button
             className="btn btn-primary"
