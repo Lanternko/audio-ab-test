@@ -1,0 +1,165 @@
+{
+  "_meta": {
+    "description": "MusicCaps v4 prompts, English original + Chinese translation kept together.",
+    "translation_policy": {
+      "instruments_kept_english": ["hi-hat", "snare", "kick", "bass guitar", "synth lead", "synth keys", "synth bells", "ukulele", "cuatro", "bassoon", "timpani", "clarinet", "cymbal", "tambourine", "harmonica", "piano", "violin", "trumpet", "choir"],
+      "instruments_with_chinese_gloss": ["harmonica (口琴)", "bassoon (巴松管)", "cuatro (拉丁四弦琴)"],
+      "technical_terms_kept_english": ["reverb", "delay", "gate", "filter sweep", "loop", "fill", "riff", "groove", "808", "amp", "mono", "arpeggio", "drum roll", "half-time", "clean", "punchy", "shimmering"],
+      "genres_kept_english": ["Pop", "Trap", "cumbia", "dubstep", "hip hop", "EDM", "rock", "Blues Harmony", "country rock", "electro"],
+      "mood_words_bilingual": "中文 (English) 雙顯"
+    },
+    "count": 30
+  },
+  "prompts": [
+    {
+      "id": "mc01",
+      "en": "An acoustic piano is playing a sad sounding composition while someone is playing a synthesizer lead-sound that sounds like someone crying. You can hear a lot of white noise in the recording. This seems to be an amateur recording. This song may be playing on a TV show.",
+      "zh": "原聲鋼琴演奏一首聽起來悲傷 (sad) 的樂曲，同時有人用 synthesizer lead 奏出類似有人在哭的聲音。錄音中有很多白噪。聽起來像業餘錄音。這首歌可能會在電視節目中播放。"
+    },
+    {
+      "id": "mc02",
+      "en": "This song contains a digital drums playing a groove that invites to dance along with some percussive sounds. A bass hit sounds is adding rhythmic and harmonic elements along with a short synth lead sound in the higher register. A male voice is shouting/singing with delay on his voice. This song may be playing in a club.",
+      "zh": "這首歌有電子鼓演奏一段令人想跟著跳舞的 groove，搭配一些打擊樂音效。bass 打擊聲加入節奏與和聲元素，配上高音域短促的 synth lead。男聲邊喊邊唱，人聲帶有 delay。這首歌可能會在俱樂部播放。"
+    },
+    {
+      "id": "mc03",
+      "en": "The low quality recording features an in-game audio recording that features an echoing female exhale sound, shimmering hi hats, claps, shimmering bells melody and groovy bass guitar. In the second half of the loop, the song changes and there is a sweet female vocal humming a melody. It sounds exciting, happy and fun.",
+      "zh": "低音質錄音呈現遊戲內音效，包含帶迴響的女性呼氣聲、閃亮的 hi-hat、拍手聲、閃亮的 bells 旋律與 groovy 的 bass guitar。loop 後半曲風轉變，出現甜美 (sweet) 的女聲哼唱旋律。聽起來興奮 (exciting)、快樂 (happy)、有趣 (fun)。"
+    },
+    {
+      "id": "mc04",
+      "en": "A male singer sings this emotional melody with a female backup singer singing chanting tones. The song is slow tempo with a guitar strumming gently and no other instrumentation. The song is emotional and romantic. The song is beautiful and lilting.",
+      "zh": "男歌手演唱這段情感豐富 (emotional) 的旋律，女伴唱以吟唱 (chanting) 音調配合。慢速，只有吉他輕柔刷奏，無其他樂器。整首情感豐富 (emotional) 且浪漫 (romantic)，優美輕快 (beautiful and lilting)。"
+    },
+    {
+      "id": "mc05",
+      "en": "The excerpt starts off with 3 bass drum beats after which an explosion and a crumbling sound can be heard. After this, downward sliding strings or a similar instrument in timbre can be heard creating a sort of scary effect. In the background wind sounds can be heard throughout.",
+      "zh": "片段以 3 次 bass drum 敲擊開始，接著是爆炸聲與崩塌聲。之後出現向下滑音的弦樂（或音色類似的樂器），營造恐怖 (scary) 感。背景全程有風聲。"
+    },
+    {
+      "id": "mc06",
+      "en": "The Pop song features an echoing synth keys melody that consists of a passionate female vocal singing over punchy kick, synth bells melody, echoing synth keys melody and shimmering hi hats. It sounds emotional and passionate.",
+      "zh": "這首流行 (Pop) 歌曲以帶迴響的 synth keys 旋律為主，女聲充滿熱情地在 punchy kick、synth bells 旋律、帶迴響的 synth keys 與閃亮 hi-hat 之上演唱。聽起來情感豐富 (emotional) 且熱情 (passionate)。"
+    },
+    {
+      "id": "mc07",
+      "en": "The Trap song features a very short snippet of hard 808 bass, shimmering hi hats, punchy snare and synth keys melody after which comes the second part of the loop where there is a wide filtered stuttering down sweep sound effect. It sounds like an interlude in the middle of the song.",
+      "zh": "這首 Trap 歌曲呈現很短的片段：重 808 bass、閃亮 hi-hat、punchy snare 與 synth keys 旋律，接著 loop 後半出現一段寬頻、帶 filter、卡頓式向下掃頻 (filtered stuttering down sweep) 的音效。聽起來像歌曲中段的 interlude。"
+    },
+    {
+      "id": "mc08",
+      "en": "This is a cumbia piece. There is a female vocal singing seductively joined by male back vocals singing in the chorus. The trumpet is playing the main melody joined by the piano and the bass guitar in the background. Latin percussion playing a cumbia beat provides the rhythmic background. The atmosphere of the piece is very playful. The ideal setting for this piece can be a latin dance course.",
+      "zh": "這是一首 cumbia 曲。女聲性感地 (seductively) 演唱，男聲在副歌加入和聲。trumpet 演奏主旋律，piano 與 bass guitar 在背景伴奏。拉丁打擊樂演奏 cumbia 節奏構成節奏背景。氛圍非常頑皮 (playful)。適合用在拉丁舞課程。"
+    },
+    {
+      "id": "mc09",
+      "en": "The low quality recording features an electric guitar tuning. The recording is gated so every time the guitar string is plucked it is very noisy, while in-between it is a complete silence.",
+      "zh": "低音質錄音呈現電吉他調音。錄音有 gate 處理，每次撥弦時噪音很大，撥弦之間完全靜默。"
+    },
+    {
+      "id": "mc10",
+      "en": "The song is an instrumental piece. The song is medium tempo with a steady rhythm, groovy bass line, retro keyboard tones. The song is dance-like and entertaining. The song is a hip hop tune and an amateur production.",
+      "zh": "這是一首純器樂曲。中速、節奏穩定、groovy 的 bass line、復古 keyboard 音色。聽起來像舞曲 (dance-like) 且有娛樂性 (entertaining)。屬於 hip hop 曲風，業餘製作。"
+    },
+    {
+      "id": "mc11",
+      "en": "The low quality recording features a sustained string melody, tinny shimmering bells and addictive piano melody, complementing each other. At the very end of the loop there is a short snippet of flat female vocal narrating. At some point during the loop, there is a subtle unwanted low frequency sputter, which definitely makes this recording low quality.",
+      "zh": "低音質錄音呈現持續的弦樂旋律、薄而閃亮的 bells 與令人上癮 (addictive) 的 piano 旋律，彼此互補。loop 最末有一小段平板的女聲旁白。loop 中途有輕微、不欲出現的低頻爆音 (low frequency sputter)，確實讓這段錄音音質偏差。"
+    },
+    {
+      "id": "mc12",
+      "en": "This is a dubstep piece. The rhythmic background consists of a hard-hitting electronic drum beat. A high-pitched synth is playing the main melody while a choir sample is played in the background for the chords. There is a high energy atmosphere in the piece. It could be played at nightclubs. This piece could also take place in DJ setlists.",
+      "zh": "這是一首 dubstep 曲。節奏背景為強勁的電子鼓拍。高音 synth 演奏主旋律，背景有 choir 取樣作為和聲。整首高能量 (high energy) 氛圍。適合在夜店或 DJ 歌單中播放。"
+    },
+    {
+      "id": "mc13",
+      "en": "This is a movie music piece. The music starts playing with a film reel effect. A strings section with cinematic characteristics are playing a dramatic tune while percussive elements resembling a timpani and a big cymbal are playing accentuated hits to put emphasis on this feeling. The atmosphere is epic. There is the aura of a story about to be told in this piece. It could be used in the soundtrack of a documentary, an action or a thriller movie. It could also be used in the soundtrack of a thriller video game.",
+      "zh": "這是一首電影配樂。開頭有膠卷 (film reel) 效果。弦樂組以電影感 (cinematic) 演奏戲劇性 (dramatic) 旋律，類似 timpani 與大 cymbal 的打擊元素重擊強調情緒。氛圍史詩 (epic)，有即將展開故事的氣息。可用在紀錄片、動作片或驚悚片 (thriller) 配樂，也適合驚悚類遊戲配樂。"
+    },
+    {
+      "id": "mc14",
+      "en": "The song is an instrumental with a devilish voice laughing. The tempo is fast with a fast paced drumming rhythm with strong cymbal crashes. The song is probably an adult animated show designed to scare.",
+      "zh": "這是一首純器樂曲，帶有惡魔般 (devilish) 的笑聲。快速、快節拍鼓擊、搭配強烈的 cymbal crash。可能是為了嚇人 (scare) 的成人動畫節目用。"
+    },
+    {
+      "id": "mc15",
+      "en": "A male guitarist plays a cool guitar like on an electric guitar. The song is medium tempo with a guitar solo with heavy a[echoes played though a guitar amplifier and no other instrumentation. The song is bluesy and passionate. The song is a casual blue slick played on a guitar.",
+      "zh": "男吉他手演奏有型的吉他，像電吉他那種。中速，電吉他 solo 加重度 echo（原文 `a[echoes` 為筆誤），透過 guitar amp 播放，無其他樂器。整首 bluesy 且熱情 (passionate)，是一段隨性流暢的 blues。"
+    },
+    {
+      "id": "mc16",
+      "en": "The song is instrumental. The tempo is fast with a beautifully played hand pan arrangement by a soloist. The song is ethereal and innocent in its beauty. The audio quality is average.",
+      "zh": "純器樂曲。快速，獨奏者優美演奏 hand pan 編排。整首空靈 (ethereal)、純真 (innocent) 的美感。音質中等。"
+    },
+    {
+      "id": "mc17",
+      "en": "The low quality recording features a musician practicing bassoon scale. In the background, there is a muffled male vocal. The recording is mono and noisy.",
+      "zh": "低音質錄音呈現一位樂手在練 bassoon（巴松管）音階。背景有模糊的男聲。錄音為單聲道 (mono) 且有雜訊。"
+    },
+    {
+      "id": "mc18",
+      "en": "This music is an electronic instrumental. The tempo is fast with punchy drumming rhythm, keyboard harmony, vigorous guitar rhythm and electronically arranged sounds like a dissonant booming drum, water bubbling, hissing and whistle like instrument playing harmony. The song is youthful, energetic, enthusiastic, vigorous, vivacious and youthful with a dance groove. This music is EDM.",
+      "zh": "這是電子純器樂曲。快速、punchy 鼓節奏、keyboard 和聲、有力的 (vigorous) 吉他節奏，以及電子編排的各種聲音：刺耳的 (dissonant) 低頻鼓、水泡聲、嘶嘶聲、口哨狀樂器演奏和聲。整首青春 (youthful)、有活力 (energetic)、熱情 (enthusiastic)、有力 (vigorous)、活潑 (vivacious) 且帶舞曲 groove。屬於 EDM。"
+    },
+    {
+      "id": "mc19",
+      "en": "This song features a harmonica playing the main melody. This is accompanied by percussion playing a simple beat with the focus on the snare. The bass plays the root note of the chord. Due to the low quality of the audio, the other instruments cannot be heard. T.",
+      "zh": "這首歌以 harmonica（口琴）演奏主旋律，搭配打擊樂簡單拍子、以 snare 為主。bass 演奏和弦根音。由於音質低，其他樂器聽不到。T.（原文即此截斷）"
+    },
+    {
+      "id": "mc20",
+      "en": "Male singers sing this vocal harmony. The song is medium fast tempo with a groovy bass line, steady drumming rhythm, piano accompaniment and guitar rhythm. The song is devotional and congregational. The song is a classic Christian praise hit.",
+      "zh": "男聲群組演唱人聲和聲。中快速、groovy 的 bass line、穩定鼓節奏、piano 伴奏、guitar 節奏。整首虔誠 (devotional)、帶會眾合唱感 (congregational)。是一首經典的基督教讚美詩 hit。"
+    },
+    {
+      "id": "mc21",
+      "en": "We hear the bright ringing of two metal objects clanging against each other. This is the bright metallic sound of steel ringing. In the distance, we faintly hear a country rock song. Specifically, we hear a country rock guitar riff being played in the background. There is also the sound of a non-steel object being placed on a surface.",
+      "zh": "可聽到兩個金屬物體相撞的明亮叮噹聲，這是鋼鐵鳴響的明亮金屬音。遠處隱約可聽到一首 country rock 歌曲，具體來說是背景中的 country rock 吉他 riff。另外還有一個非金屬物體放置在平面上的聲音。"
+    },
+    {
+      "id": "mc22",
+      "en": "A male vocalist sings this animated song. The tempo is medium with vocal emphasis, a bright ukelele harmony, groovy bass guitar, rhythmic acoustic guitar and piano accompaniment. The song is emphatic, passionate, jealous, emotional, sentimental and story telling. The song has an orchestral vibe.",
+      "zh": "男主唱演唱這首活潑的歌。中速、以人聲為主，明亮的 ukulele 和聲、groovy 的 bass guitar、節奏感的原聲吉他與 piano 伴奏。整首帶強調感 (emphatic)、熱情 (passionate)、忌妒 (jealous)、情感豐富 (emotional)、感傷 (sentimental) 且具敘事感。帶管絃樂 (orchestral) 氛圍。"
+    },
+    {
+      "id": "mc23",
+      "en": "This audio contains someone playing a clean e-guitar melody that sounds soothing. This song may be playing at a little living room concert.",
+      "zh": "這段音檔有人演奏 clean 的電吉他旋律，聽起來舒緩 (soothing)。可能會在小型客廳音樂會中播放。"
+    },
+    {
+      "id": "mc24",
+      "en": "This clip brings about the sensation of building up to something. It features an arpeggiated melody on the piano, and timpani drum rolls. The audio quality is low.",
+      "zh": "這段 clip 帶來一種逐漸堆疊至某個高點 (building up) 的感覺。包含 piano 的 arpeggio（分散和弦）旋律與 timpani 的 drum roll。音質低。"
+    },
+    {
+      "id": "mc25",
+      "en": "Instrumental electro music with a half time feel in the kick and busy drums. The bass is constantly busy, with resonant filter sweeps for dramatic effect. There are multiple overlapping high synth melodies with big sounding reverb throughout. Perfect for a large outdoor or stadium EDM festival.",
+      "zh": "純器樂 electro 音樂，kick 帶 half-time 感、鼓點密集。bass 持續忙碌，搭配共振式 filter sweep 營造戲劇效果 (dramatic)。多層高音 synth 旋律彼此重疊，全程有大空間 reverb。完美適合大型戶外或體育場 EDM 音樂節。"
+    },
+    {
+      "id": "mc26",
+      "en": "This music is instrumental, the tempo is slow with an electric guitar lead and a strong bass guitar accompaniment. The music is assertive and emphatic but sounds sad, melancholic, nostalgic, romantic, wistful and sentimental. This music is Blues Harmony.",
+      "zh": "這是純器樂曲，慢速，電吉他主奏、強勁的 bass guitar 伴奏。整首堅定 (assertive)、強調 (emphatic)，但聽起來悲傷 (sad)、憂鬱 (melancholic)、懷舊 (nostalgic)、浪漫 (romantic)、若有所思 (wistful)、感傷 (sentimental)。屬於 Blues Harmony 風格。"
+    },
+    {
+      "id": "mc27",
+      "en": "This is the noise of a fire alarm with rock music faintly playing in the background. The rock music piece has a shouting vocal, electric guitar and drums. The fire alarm makes a very disturbing sound.",
+      "zh": "這是火警警報的聲音，背景隱約有 rock 音樂。那段 rock 有喊唱人聲、電吉他與鼓。火警警報聲非常擾人 (disturbing)。"
+    },
+    {
+      "id": "mc28",
+      "en": "This is a rock music piece. The male vocalist is singing melodically in the Spanish language. The keyboard is playing the chords of the song while the electric guitar joins with the occasional fills. There is a relatively quiet bass guitar supporting them in the background. The acoustic drums provide a basic rock beat for the rhythm. It has an easygoing feeling. This piece could be used in a teenage drama taking place in a Spanish-speaking country.",
+      "zh": "這是一首搖滾 (rock) 歌曲。男主唱以西班牙語旋律演唱。keyboard 演奏和弦，電吉他偶爾加入 fill。背景有一把相對小聲的 bass guitar 撐住。原聲鼓提供基本搖滾節拍。整體輕鬆 (easygoing)。可用在西語國家背景的青少年劇集。"
+    },
+    {
+      "id": "mc29",
+      "en": "This music is a mellow instrumental. The tempo is medium with a passionate violin harmony and a simple, sharp piano melody with intense bass lines. The overall mood of the music is deep, sad, lonely, melancholic, nostalgic and poignant and yet beautiful and pleasant.",
+      "zh": "這是一首柔和 (mellow) 的純器樂曲。中速，熱情 (passionate) 的 violin 和聲，簡單而犀利的 piano 旋律，搭配濃厚 bass line。整體情緒深沉 (deep)、悲傷 (sad)、孤獨 (lonely)、憂鬱 (melancholic)、懷舊 (nostalgic)、心酸 (poignant)，同時美麗 (beautiful) 且愉悅 (pleasant)。"
+    },
+    {
+      "id": "mc30",
+      "en": "This audio contains someone playing a melody on a guitar in the midrange while someone else is strumming a melody on a cuatro in a higher key. Someone is playing a tambourine while a clarinet is playing a fast lead melody. This audio may be playing as a live concert.",
+      "zh": "這段音檔有人以 guitar 中音域演奏旋律，另一人以 cuatro（拉丁四弦琴）在較高音域刷奏旋律。另有人敲 tambourine，clarinet 演奏快速主旋律。可能是現場音樂會。"
+    }
+  ]
+}

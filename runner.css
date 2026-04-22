@@ -517,6 +517,24 @@
 .prompt-text {
   color: var(--accent-ink);
 }
+.prompt-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.prompt-text-zh {
+  color: var(--text-secondary, #5a5a5a);
+  font-size: 12.5px;
+  line-height: 1.6;
+  padding-top: 2px;
+  border-top: 1px dashed var(--border, rgba(0,0,0,0.12));
+  margin-top: 2px;
+}
+.prompt-box-bilingual {
+  align-items: flex-start;
+}
 
 /* ── CMOS judgement: two stacked 7-point scales ─ */
 .cmos-judgement {

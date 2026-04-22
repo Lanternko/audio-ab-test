@@ -300,9 +300,14 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
         <div className="review-banner">{copy.runner.reviewMode}</div>
       )}
 
-      <div className="prompt-box">
+      <div className={`prompt-box${lang === "zh" && q.descZh ? " prompt-box-bilingual" : ""}`}>
         <span className="prompt-tag">{copy.runner.promptTag}</span>
-        <span className="prompt-text" dangerouslySetInnerHTML={{__html: boldifyHtml(q.desc)}} />
+        <div className="prompt-text-wrap">
+          <span className="prompt-text" dangerouslySetInnerHTML={{__html: boldifyHtml(q.desc)}} />
+          {lang === "zh" && q.descZh && (
+            <span className="prompt-text-zh">{q.descZh}</span>
+          )}
+        </div>
       </div>
 
       <div className="pair">
