@@ -1,13 +1,25 @@
 # Audio A/B Test — Blind Listening Interface
 
-A browser-based pairwise listening test for evaluating audio variants (e.g., two model versions). 10 MusicCaps clips, 7-point CMOS scale (−3 … +3), two metrics per clip: **Audio Quality** and **Prompt Following**.
+A browser-based pairwise listening test for comparing two audio variants (currently `p7v1` vs `p8v1`) on MusicCaps prompts. The app is static HTML/CSS/JS (React + Babel via CDN). One submission = one round of **8** blind A/B comparisons sampled from a **24-clip** pool, with two 7-point CMOS metrics:
 
-## Run locally
+- **Audio Quality**
+- **Prompt Following**
 
-The site is static HTML/CSS/JS (React + Babel via CDN). FLAC files are served from `audio/`. Because of browser security, `file://` won't work — run a local HTTP server:
+## What This Repo Supports
+
+- Blind A/B playback with per-question ratings
+- **English / 中文** interface toggle
+- Autosave of the current round in `localStorage`
+- Optional cloud submission to Google Sheets via Google Apps Script
+- JSON backup / export from the Results page
+- Per-participant seen-clip tracking so starting another round with the same name avoids repeats until the pool is exhausted
+
+## Run Locally
+
+The site is static HTML/CSS/JS. Audio files are served from `audio/`, so `file://` will not work — run a local HTTP server instead:
 
 ```bash
-cd AB-test
+cd audio-ab-test
 python3 -m http.server 8000
 ```
 
@@ -17,93 +29,142 @@ Then open <http://localhost:8000/>.
 
 1. Push this repo to GitHub.
 2. In **Settings → Pages**, set source = `main` branch / `/ (root)`.
-3. Wait ~1 minute, then visit `https://<your-username>.github.io/<repo-name>/`.
+3. Wait about 1 minute, then open `https://<your-username>.github.io/<repo-name>/`.
 
-## Workflow
+## Storage Model
 
-1. Each participant enters their name on the welcome screen (the last-used name is pre-filled for convenience).
-2. A **round** is a random sample of **`roundSize`** clips from **`pool`** (default: 8 from 8). For each clip they listen to blind samples **A** and **B**, then rate:
-   - **Audio Quality** (−3 … +3) — overall perceptual quality.
-   - **Prompt Following** (−3 … +3) — faithfulness to the prompt shown above the players.
-3. After the last question, the **Results** page reveals the true identities (`p7v1` / `p8v1`) and shows weighted-score summaries per metric.
-4. Participant clicks **Submit results** — the full log POSTs to the cloud endpoint (Google Sheets via Apps Script); a **new round immediately starts with a different sample of clips**. They can keep going indefinitely.
-   - Clips already seen by this participant are **excluded** from the next sample (tracked per-name in `localStorage`). When the unseen pool is smaller than `roundSize`, the seen set quietly resets so rounds never stall — `poolResetThisRound: true` is logged so you can filter in analysis.
-   - If `SUBMIT_URL` is empty the primary button falls back to "Download & next round" — a file is downloaded, the next round still starts.
-   - If an upload fails, a JSON backup auto-downloads and the UI shows a **Retry upload** button. State isn't lost.
-   - Click the **×** next to the name in the topbar to log out / switch participant.
-   - The tester-facing UI includes an **English / 中文** language toggle; only the interface chrome is translated. Prompt text stays in its original language.
+This app uses a **local-first + optional cloud** storage flow.
 
-## Cloud submission setup (Google Apps Script + Sheets)
+During a round, the participant's progress is autosaved in the browser:
 
-Five-minute path from zero to live:
+- `audio-ab-test-state-v4`: current in-progress round
+- `audio-ab-test-seen-v4`: per-participant seen history used to avoid repeats across rounds
+
+When the participant enters the **Results** page:
+
+- If `window.SUBMIT_URL` is set, the app automatically `POST`s the submission payload to that endpoint.
+- If `window.SUBMIT_URL` is an empty string, the app runs in **export-only** mode and downloads a JSON file instead of uploading.
+- If an upload fails, the app automatically downloads a JSON backup and shows a **Retry upload** button. The current state is not discarded.
+
+In other words, this repo can operate in either of these modes:
+
+- **Cloud mode**: local autosave + Google Sheets submission + optional JSON backup
+- **Export-only mode**: local autosave + downloaded JSON only
+
+## Participant Workflow
+
+1. The participant enters their name on the welcome screen.
+   - The most recently used name is pre-filled from `localStorage` for convenience.
+2. The app samples **8** clips from the **24-clip** pool and randomizes which true variant appears as **A** or **B** for each question.
+3. For each question, the participant listens to blind samples **A** and **B**, then rates:
+   - **Audio Quality**
+   - **Prompt Following**
+4. After all questions are answered, the participant clicks **View results** and confirms.
+   - At that point the answers are locked.
+   - The app then auto-uploads to `SUBMIT_URL` if configured, or auto-downloads a JSON file if not.
+5. The **Results** page reveals the true identities (`p7v1` / `p8v1`) and shows:
+   - weighted-score summaries per metric
+   - per-question AQ / PF ratings
+   - A/B identity mapping for each question
+6. The participant can optionally click **Download backup JSON** from the Results page.
+7. To start another round for the same participant, click the **×** next to the participant name and start again with the same name.
+   - Previously seen clips for that name are excluded until the unseen pool is too small.
+   - When the pool is exhausted, the seen set resets automatically and `poolResetThisRound: true` is logged in the submission payload.
+
+## Cloud Submission Setup (Google Apps Script + Sheets)
+
+Quick path from zero to live:
 
 1. Create an empty Google Sheet. Copy the URL and note its **ID** — the long string between `/d/` and `/edit`.
-2. In that sheet → **Extensions → Apps Script**. Delete the default `Code.gs` contents, paste [`server/apps-script.gs`](server/apps-script.gs), and set `SHEET_ID` to the ID from step 1.
-3. Save, then **Deploy → New deployment → Web app**:
-   - **Execute as:** Me (your Google account)
+2. In that sheet, open **Extensions → Apps Script**.
+3. Replace the default `Code.gs` with [`server/apps-script.gs`](server/apps-script.gs), then set `SHEET_ID` to your sheet ID.
+4. Save, then deploy:
+   - **Deploy → New deployment → Web app**
+   - **Execute as:** Me
    - **Who has access:** Anyone
-   - Click **Deploy**. Copy the `/exec` URL it gives you.
-4. In [`index.html`](index.html), set `window.SUBMIT_URL = "<paste /exec URL here>"`.
-5. `git commit && git push`. GitHub Pages rebuilds in ~1 minute and every subsequent submission lands as a new row in your sheet.
+5. Copy the deployed `/exec` URL.
+6. In [`index.html`](index.html), set:
 
-The Apps Script writes one row per submission with per-question ratings flattened into columns (`q1_aq`, `q1_pf`, …) plus a `fullJSON` column for archival. The header row is created automatically on the first submission.
+```html
+window.SUBMIT_URL = "<your Apps Script /exec URL>";
+```
 
-## Scale convention
+7. Commit and push. GitHub Pages will rebuild, and each submission will append one row to the configured sheet.
 
-Positive CMOS = A preferred, negative = B preferred, 0 = tie.
-For each answered question:
+### Notes
 
-| val | meaning           |
-|-----|-------------------|
-| +3  | A much better     |
-| +2  | A better          |
-| +1  | A slightly better |
-|  0  | About the same    |
-| −1  | B slightly better |
-| −2  | B better          |
-| −3  | B much better     |
+- The frontend sends submissions as `text/plain;charset=utf-8` on purpose. This avoids the CORS preflight problems that commonly affect Apps Script web apps with `application/json`.
+- If you want to disable cloud upload, set `window.SUBMIT_URL = ""` and the app will fall back to export-only mode.
 
-Weighted score per variant sums the magnitude of votes in its favour (ties contribute nothing). A/B side for each clip is randomised once; `aLabel` / `bLabel` in the JSON reveal the true identity.
+The Apps Script writes one row per submission with flattened per-question columns (`q1_aq`, `q1_pf`, ...) plus a `fullJSON` column for archival.
 
-## Log format
+## Scale Convention
 
-The exported JSON contains:
+Positive CMOS = **A preferred**, negative = **B preferred**, `0` = tie.
 
-- `project`, `projectLabel`, `variants`, `scale`
-- `participant`, `startedAt`, `completedAt`
-- `log[]`: per-question entries with `questionId`, `clipId`, `prompt`, `aFile`, `bFile`, `aLabel`, `bLabel`, `audioQuality`, `promptFollowing`, `ratedAt`
-- `summary`: per-metric aggregate `scores` + `dist` per variant
+| val | meaning |
+|-----|---------|
+| +3 | A much better |
+| +2 | A better |
+| +1 | A slightly better |
+| 0 | About the same |
+| -1 | B slightly better |
+| -2 | B better |
+| -3 | B much better |
 
-Every participant's JSON is fully self-contained for offline analysis.
+Weighted score per variant sums the magnitude of votes in its favour. Ties contribute nothing. A/B side is randomized independently for each question; `aLabel` and `bLabel` in the payload reveal the true identity.
 
-## Dataset (pool)
+## Submission Payload
 
-Default: **8 fixed-prompt clips × 2 variants** (`p7v1` and `p8v1`), WAV (peak-normalised to −1 dBFS).
+The exported / uploaded JSON includes:
 
-The **pool** sits in [`data.js`](data.js) under `DATA.pool`. Each entry:
+- `schemaVersion`, `submissionId`
+- `project`, `projectLabel`, `variants`
+- `participant`
+- `roundIndex`, `roundSize`, `poolSize`, `poolResetThisRound`
+- `selection`
+- `startedAt`, `completedAt`, `userAgent`
+- `totalQuestions`, `answeredQuestions`, `metrics`, `scale`
+- `log[]`: one entry per question with `questionId`, `clipId`, `prompt`, `aFile`, `bFile`, `aLabel`, `bLabel`, `audioQuality`, `promptFollowing`, `ratedAt`
+- `summary`: per-metric aggregate `scores` and `dist`
+
+Each submission is self-contained, so you can analyze it offline even without Google Sheets.
+
+## Dataset (Pool)
+
+Current dataset:
+
+- **24 MusicCaps prompts**
+- **2 variants per prompt**: `p7v1` and `p8v1`
+- audio files stored as WAV under `audio/`
+- each round samples **8** questions from the pool
+
+The pool lives in [`data.js`](data.js) under `DATA.pool`. Each item looks like:
+
 ```js
 {
-  clipId: "piano",
-  title: "piano",
-  prompt: "…exact string fed to infer.py during generation…",
-  files: { p7v1: "piano_p7v1.wav", p8v1: "piano_p8v1.wav" },
+  clipId: "mc01",
+  title: "01",
+  prompt: "...prompt text...",
+  files: { p7v1: "mc01_p7v1.wav", p8v1: "mc01_p8v1.wav" },
 }
 ```
 
-To grow the pool (e.g. from 8 → 20 → 40):
-1. Generate the new clips for both variants on the training server.
-2. Drop the WAVs into `audio/` (filenames like `<clipId>_p7v1.wav` / `<clipId>_p8v1.wav`).
-3. Append entries to `DATA.pool` with the exact prompt text.
-4. Commit + push. `DATA.roundSize` (default 8) stays the same — larger pools just mean more rounds per participant before any repeat.
+To expand the pool:
 
-To change which two variants are compared, update `DATA.variants` (must be 2 strings, e.g. `["p8v1", "p9v1"]`).
+1. Add the new WAV files to `audio/`.
+2. Append new entries to `DATA.pool` in `data.js`.
+3. Keep `DATA.variants` aligned with the filenames you provide.
+4. Commit and push.
+
+If you want to compare a different pair of systems, update `DATA.variants` to a new pair such as `["p8v1", "p9v1"]` and make sure every pool item has matching filenames.
 
 ## Files
 
-- `index.html` — App shell, Welcome screen, routing, `SUBMIT_URL` config.
-- `data.js` — Dataset, CMOS scale options, metrics definitions, icons.
-- `runner.jsx` — Evaluate screen (audio transport, CMOS scales, ticker).
-- `overview.jsx` — Overview grid + Results screen (per-metric cards + reveal table + cloud submit + JSON export).
-- `styles.css` / `runner.css` / `overview.css` — styling.
-- `audio/` — WAV dataset (peak-normalised to −1 dBFS).
-- `server/apps-script.gs` — Google Apps Script `doPost` receiver (deploy to collect submissions into a Sheet).
+- `index.html` — app shell, startup flow, localStorage bootstrapping, `SUBMIT_URL` config
+- `data.js` — dataset, UI copy, CMOS labels, sampling helpers
+- `runner.jsx` — evaluation screen with audio players and rating controls
+- `overview.jsx` — overview / results screens, payload builder, upload/export logic
+- `styles.css`, `runner.css`, `overview.css` — styling
+- `audio/` — WAV dataset
+- `server/apps-script.gs` — Google Apps Script receiver that writes submissions into Google Sheets
