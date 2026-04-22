@@ -454,24 +454,15 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
           {hasEndpoint ? copy.results.submitMessage : copy.results.exportMessage}
         </div>
         <div className="actions">
-          {state.submitted && (
-            <button className="btn" onClick={() => goto("runner")}>
-              {copy.results.backToReview}
-            </button>
-          )}
-          {state.submitted ? (
-            <button className="btn btn-primary" onClick={startNextRound}>
-              {copy.results.nextRound}
-            </button>
-          ) : submitState.phase === "err" ? (
+          {submitState.phase === "err" ? (
             <button className="btn btn-primary" onClick={retryUpload}>
               {copy.results.retry}
             </button>
-          ) : (
+          ) : submitState.phase === "uploading" ? (
             <button className="btn btn-primary" disabled>
               {copy.results.uploading}
             </button>
-          )}
+          ) : null}
           <button className="btn" onClick={exportJSON} disabled={submitState.phase === "uploading"}>
             {hasEndpoint ? copy.results.backup : copy.results.downloadOnly}
           </button>
