@@ -78,7 +78,7 @@ function headerRow_(payload) {
     const n = entry.questionId;
     header.push(`q${n}_clip`, `q${n}_aLabel`, `q${n}_bLabel`, `q${n}_aq`, `q${n}_pf`, `q${n}_ratedAt`);
   });
-  header.push("userAgent", "fullJSON");
+  header.push("clientId", "clientIp", "userAgent", "fullJSON");
   return header;
 }
 
@@ -122,6 +122,8 @@ function flattenForRow_(payload) {
     );
   });
 
+  row.push(payload.clientId || "");
+  row.push(payload.clientIp || "");
   row.push(payload.userAgent || "");
   row.push(JSON.stringify(payload));
   return row;

@@ -2,11 +2,44 @@
 
 const { useEffect: useEffectOV, useState: useStateOV } = React;
 
-const SCHEMA_VERSION = "v3-cmos7pt-2metrics-pool-rounds";
+const SCHEMA_VERSION = "v4-cmos7pt-2metrics-pool-rounds-clientid";
 
 function makeSubmissionId() {
   if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// Persistent per-browser ID so we can tell if the same device submits twice.
+// Not tied to identity — cleared localStorage or a different browser resets it.
+function getClientId() {
+  try {
+    const KEY = "abtest.clientId";
+    let id = localStorage.getItem(KEY);
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(KEY, id);
+    }
+    return id;
+  } catch (_err) {
+    return "";
+  }
+}
+
+// Best-effort public IP lookup. Returns "" on any failure / timeout so a
+// flaky IP service never blocks submission.
+async function fetchClientIp() {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2000);
+    const res = await fetch("https://api.ipify.org?format=json", { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return "";
+    const data = await res.json();
+    return (data && data.ip) || "";
+  } catch (_err) {
+    return "";
+  }
 }
 
 // POST the payload as text/plain to avoid a CORS preflight — Apps Script
@@ -262,7 +295,7 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
     }
   }, []);
 
-  const buildPayload = () => {
+  const buildPayload = (clientIp = "") => {
     const now = new Date().toISOString();
     const log = questions.map(q => {
       const a = state.answers[q.id] || {};
@@ -302,6 +335,8 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
       startedAt: state.startedAt,
       completedAt: now,
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+      clientId: getClientId(),
+      clientIp: clientIp || "",
       totalQuestions: roundSize,      // kept for backwards-compat with any consumer reading this
       answeredQuestions: answered,
       metrics: metrics.map(m => m.key),
@@ -323,12 +358,12 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
     URL.revokeObjectURL(url);
   };
 
-  const exportJSON = () => downloadJSON(buildPayload());
+  const exportJSON = async () => downloadJSON(buildPayload(await fetchClientIp()));
 
   // Auto-submit runs once on mount when the user has pressed View Results
   // (state.submitting = true) but upload hasn't completed yet.
   const runUpload = async () => {
-    const payload = buildPayload();
+    const payload = buildPayload(await fetchClientIp());
 
     if (!hasEndpoint) {
       downloadJSON(payload);
@@ -359,7 +394,7 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
   }, [state.submitting, state.submitted, roundSize]);
 
   const retryUpload = async () => {
-    const payload = buildPayload();
+    const payload = buildPayload(await fetchClientIp());
     setSubmitState({ phase: "uploading", message: copy.results.retrying });
     try {
       await uploadSubmission(payload, submitUrl);
