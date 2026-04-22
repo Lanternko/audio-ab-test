@@ -657,8 +657,25 @@
   }
   .pair { grid-template-columns: 1fr; }
   .cmos-row { grid-template-columns: 1fr; gap: 10px; }
-  .cmos-track { grid-template-columns: 1fr; }
-  .cmos-end { display: none; }
+  .cmos-track {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "left right"
+      "buttons buttons";
+    gap: 6px 10px;
+  }
+  .cmos-end {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: 0.02em;
+  }
+  .cmos-end.left { grid-area: left; text-align: left; }
+  .cmos-end.right { grid-area: right; text-align: right; }
+  .cmos-end.left::before { content: "← "; opacity: 0.6; }
+  .cmos-end.right::after { content: " →"; opacity: 0.6; }
+  .cmos-buttons { grid-area: buttons; gap: 4px; }
+  .cmos-btn { padding: 8px 0; font-size: 12.5px; border-radius: 8px; }
   .footer-bar {
     flex-direction: column;
     align-items: stretch;
