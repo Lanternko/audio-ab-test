@@ -210,14 +210,16 @@ function MetricCard({ metric, answers, leftL, rightL, questions, lang }) {
   const leader = scores[leftL] === scores[rightL] ? null
     : scores[leftL] > scores[rightL] ? leftL : rightL;
 
+  const lLabel = variantLabel(leftL);
+  const rLabel = variantLabel(rightL);
   const segs = [
-    { key: `${leftL}_3`,  label: `${leftL} +3` },
-    { key: `${leftL}_2`,  label: `${leftL} +2` },
-    { key: `${leftL}_1`,  label: `${leftL} +1` },
+    { key: `${leftL}_3`,  label: `${lLabel} +3` },
+    { key: `${leftL}_2`,  label: `${lLabel} +2` },
+    { key: `${leftL}_1`,  label: `${lLabel} +1` },
     { key: "tie",          label: copy.results.tie },
-    { key: `${rightL}_1`, label: `${rightL} +1` },
-    { key: `${rightL}_2`, label: `${rightL} +2` },
-    { key: `${rightL}_3`, label: `${rightL} +3` },
+    { key: `${rightL}_1`, label: `${rLabel} +1` },
+    { key: `${rightL}_2`, label: `${rLabel} +2` },
+    { key: `${rightL}_3`, label: `${rLabel} +3` },
   ];
 
   return (
@@ -228,7 +230,7 @@ function MetricCard({ metric, answers, leftL, rightL, questions, lang }) {
       </div>
       <div className="score-row">
         <div className={`score-card score-a ${leader === leftL ? "winner" : ""}`}>
-          <div className="score-label">{leftL}</div>
+          <div className="score-label">{lLabel}</div>
           <div className="score-value">{scores[leftL]}<span className="score-sub"> {copy.results.points}</span></div>
           <div className="score-breakdown">
             +3 × {dist[`${leftL}_3`]} · +2 × {dist[`${leftL}_2`]} · +1 × {dist[`${leftL}_1`]}
@@ -240,7 +242,7 @@ function MetricCard({ metric, answers, leftL, rightL, questions, lang }) {
           <div className="score-breakdown">{copy.results.tieCaption}</div>
         </div>
         <div className={`score-card score-b ${leader === rightL ? "winner" : ""}`}>
-          <div className="score-label">{rightL}</div>
+          <div className="score-label">{rLabel}</div>
           <div className="score-value">{scores[rightL]}<span className="score-sub"> {copy.results.points}</span></div>
           <div className="score-breakdown">
             +3 × {dist[`${rightL}_3`]} · +2 × {dist[`${rightL}_2`]} · +1 × {dist[`${rightL}_1`]}
@@ -262,9 +264,9 @@ function MetricCard({ metric, answers, leftL, rightL, questions, lang }) {
         })}
       </div>
       <div className="dist-legend">
-        <span className="a">← {copy.results.preferLeft(leftL)}</span>
+        <span className="a">← {copy.results.preferLeft(lLabel)}</span>
         <span>{copy.results.tie.toLowerCase ? copy.results.tie.toLowerCase() : copy.results.tie}</span>
-        <span className="b">{copy.results.preferRight(rightL)} →</span>
+        <span className="b">{copy.results.preferRight(rLabel)} →</span>
       </div>
     </div>
   );
@@ -442,10 +444,15 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
 
       <div className="ab-diff-card">
         <h3>{copy.results.abDiffTitle}</h3>
+        {copy.results.abDiffIntro && (
+          <p className="ab-diff-intro">{copy.results.abDiffIntro}</p>
+        )}
         <div className="ab-diff-row">
           {[leftL, rightL].map(v => (
             <div key={v} className={`ab-diff-item ${v === leftL ? "left" : "right"}`}>
-              <span className="ab-diff-label">{v}</span>
+              <span className="ab-diff-label">
+                {DATA.variantDescriptions?.[v]?.displayName || v}
+              </span>
               <span className="ab-diff-desc">
                 {lang === "zh"
                   ? (DATA.variantDescriptions?.[v]?.zh || v)
@@ -476,8 +483,8 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
               <div className="rating-cell">{formatVal(a.audioQuality)}</div>
               <div className="rating-cell">{formatVal(a.promptFollowing)}</div>
               <div className="reveal-cell">
-                <span className="pill">A · {q.aLabel}</span>
-                <span className="pill">B · {q.bLabel}</span>
+                <span className="pill">A · {variantLabel(q.aLabel)}</span>
+                <span className="pill">B · {variantLabel(q.bLabel)}</span>
               </div>
             </div>
           );
@@ -502,11 +509,11 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
             {hasEndpoint ? copy.results.backup : copy.results.downloadOnly}
           </button>
         </div>
-        {submitState.phase !== "idle" && (
+        {submitState.phase === "err" || submitState.phase === "uploading" ? (
           <div className={`submit-status submit-status-${submitState.phase}`}>
             {submitState.message}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

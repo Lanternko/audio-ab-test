@@ -51,8 +51,8 @@ const DATA = {
   roundSize: 10,
   pool: POOL,
   variantDescriptions: {
-    "p7v1": { en: "p7v1 — model configuration 7, variant 1", zh: "p7v1 — 模型配置 7，第 1 版本" },
-    "p8v1": { en: "p8v1 — model configuration 8, variant 1", zh: "p8v1 — 模型配置 8，第 1 版本" },
+    "p7v1": { shortName: "Q", displayName: "Quality-embedding", en: "Consistency score added alongside caption during training.", zh: "加入了描述一致性分數" },
+    "p8v1": { shortName: "no-Q", displayName: "no-Q", en: "Same architecture, consistency score removed — baseline for comparison.", zh: "相同架構，移除此信號作為基準對照" },
   },
 };
 
@@ -160,12 +160,13 @@ const UI_TEXT = {
         identity: "A / B identities",
       },
       noRound: "No questions in progress",
-      abDiffTitle: "What are A and B?",
+      abDiffTitle: "What were you evaluating?",
+      abDiffIntro: "Modern text-to-music models use AI-generated captions to guide generation. The problem: for the same piece of music, AI descriptions can vary significantly each time. We tried quantifying \"how consistent the captions for a track are\" into a single score, and feeding it alongside the caption during training — to see if the model could generate music that better matches text and maintains more stable quality.",
       backToReview: "← Listen again",
       submitMessage: "Your feedback means a lot, thank you!",
       exportMessage: "Download your ratings as JSON.",
-      backup: "Download backup JSON",
-      downloadOnly: "Download JSON only",
+      backup: "Download results",
+      downloadOnly: "Download results",
       downloadAndNext: "Download & continue",
       submit: "Submit results",
       nextRound: "Continue",
@@ -287,12 +288,13 @@ const UI_TEXT = {
         identity: "A / B 真實身分",
       },
       noRound: "目前沒有題目",
-      abDiffTitle: "A 和 B 是什麼？",
+      abDiffTitle: "你剛才在評估什麼？",
+      abDiffIntro: "現代文字轉音樂模型使用 AI 自動生成的描述（caption）來引導生成。但問題是：同一首音樂，每次 AI 描述的方式可能差很大。我們嘗試把「這首音樂的描述之間有多一致」量化成一個數字，連同描述一起傳給模型學習 — 看能否讓模型生成更貼近文字、品質更穩定的音樂。",
       backToReview: "← 回去聽",
       submitMessage: "您的回饋很重要，謝謝！",
       exportMessage: "請下載評分結果 JSON。",
-      backup: "下載備份 JSON",
-      downloadOnly: "只下載 JSON",
+      backup: "下載結果",
+      downloadOnly: "下載結果",
       downloadAndNext: "下載並繼續",
       submit: "送出結果",
       nextRound: "繼續",
@@ -424,8 +426,12 @@ function boldifyHtml(text) {
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 }
 
+function variantLabel(key) {
+  return DATA.variantDescriptions?.[key]?.shortName || key;
+}
+
 Object.assign(window, {
   DATA, POOL, LANG_OPTIONS, LEGACY_PROJECT_KEYS, icons,
   getText, getMetrics, getCmosOptions, detectPreferredLang,
-  sampleRoundIndices, makeAbMap, buildQuestion, boldifyHtml,
+  sampleRoundIndices, makeAbMap, buildQuestion, boldifyHtml, variantLabel,
 });

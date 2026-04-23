@@ -584,7 +584,9 @@
   font-weight: 500;
 }
 .cmos-end.left { text-align: right; color: var(--accent); }
+.cmos-end.left::before { content: "← "; opacity: 0.55; }
 .cmos-end.right { color: #4a3c58; }
+.cmos-end.right::after { content: " →"; opacity: 0.55; }
 .cmos-buttons {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

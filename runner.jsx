@@ -318,8 +318,8 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
       </div>
 
       <div className="pair">
-        <Transport key={`${state.roundIndex}-${q.id}-A`} src={q.aFile} side="A" trueLabel={q.aLabel} labelSide={sideOf(q.aLabel)} revealed={state.revealed} lang={lang} />
-        <Transport key={`${state.roundIndex}-${q.id}-B`} src={q.bFile} side="B" trueLabel={q.bLabel} labelSide={sideOf(q.bLabel)} revealed={state.revealed} lang={lang} />
+        <Transport key={`${state.roundIndex}-${q.id}-A`} src={q.aFile} side="A" trueLabel={variantLabel(q.aLabel)} labelSide={sideOf(q.aLabel)} revealed={state.revealed} lang={lang} />
+        <Transport key={`${state.roundIndex}-${q.id}-B`} src={q.bFile} side="B" trueLabel={variantLabel(q.bLabel)} labelSide={sideOf(q.bLabel)} revealed={state.revealed} lang={lang} />
       </div>
 
       <div className="cmos-judgement">

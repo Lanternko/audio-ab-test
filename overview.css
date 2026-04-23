@@ -294,8 +294,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-tertiary);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin-bottom: 10px;
 }
 .score-card .score-value {
@@ -350,6 +349,13 @@
   font-size: 15px;
   font-weight: 500;
   color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.ab-diff-intro {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
   margin-bottom: 14px;
 }
 .ab-diff-row {
