@@ -438,10 +438,6 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
         </div>
       </div>
 
-      {metrics.map(m => (
-        <MetricCard key={m.key} metric={m} answers={state.answers} leftL={leftL} rightL={rightL} questions={questions} lang={lang} />
-      ))}
-
       <div className="ab-diff-card">
         <h3>{copy.results.abDiffTitle}</h3>
         {copy.results.abDiffIntro && (
@@ -462,6 +458,10 @@ function Results({ state, setState, goto, finishAndStartNext, lang }) {
           ))}
         </div>
       </div>
+
+      {metrics.map(m => (
+        <MetricCard key={m.key} metric={m} answers={state.answers} leftL={leftL} rightL={rightL} questions={questions} lang={lang} />
+      ))}
 
       <div className="reveal-table">
         <div className="reveal-row header">
