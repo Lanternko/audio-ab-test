@@ -686,6 +686,6 @@
     width: 100%;
   }
   .footer-hint {
-    text-align: center;
+    display: none;
   }
 }
