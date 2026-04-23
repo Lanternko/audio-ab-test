@@ -1,3 +1,5 @@
+https://lanternko.github.io/audio-ab-test/
+
 # Audio A/B Test — Blind Listening Interface
 
 A browser-based pairwise listening test for comparing two audio variants (currently `p7v1` vs `p8v1`) on MusicCaps prompts. The app is static HTML/CSS/JS (React + Babel via CDN). One submission = one round of **8** blind A/B comparisons sampled from a **24-clip** pool, with two 7-point CMOS metrics:
