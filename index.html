@@ -120,9 +120,11 @@
                 </li>
               ))}
             </ul>
-            <p>
-              {copy.welcome.blindNotice(DATA.roundSize, DATA.pool.length)} {copy.welcome.keepGoing}
-            </p>
+            <ul className="welcome-tips">
+              {copy.welcome.blindNotice(DATA.roundSize, DATA.pool.length).map((line, i) => (
+                <li key={i}>{line}</li>
+              ))}
+            </ul>
             <label htmlFor="participant-name">{copy.welcome.nameLabel}</label>
             <input
               id="participant-name"
