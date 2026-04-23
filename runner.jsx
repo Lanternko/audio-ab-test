@@ -72,6 +72,14 @@ function Transport({ src, side, trueLabel, labelSide, revealed, lang }) {
     }
   };
 
+  const restart = () => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.currentTime = 0;
+    const p = a.play();
+    if (p && p.catch) p.catch((e) => console.warn("play failed", e));
+  };
+
   const seekTo = (clientX, track) => {
     const a = audioRef.current;
     if (!a || !isFinite(a.duration) || !a.duration) return;
@@ -113,9 +121,8 @@ function Transport({ src, side, trueLabel, labelSide, revealed, lang }) {
             <span className="hint">{copy.runner.blindSample}</span>
           )}
         </div>
-        <button className="btn" onClick={toggle}>
-          <span dangerouslySetInnerHTML={{__html: playing ? icons.pause : icons.play}} />
-          {playing ? `${copy.runner.pause} ${side}` : `${copy.runner.play} ${side}`}{revealed && trueLabel ? ` · ${trueLabel}` : ""}
+        <button className="btn" onClick={restart} aria-label={`${copy.runner.replay} ${side}`}>
+          <span dangerouslySetInnerHTML={{__html: icons.restart}} />
         </button>
       </div>
 
@@ -305,7 +312,7 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
         <div className="prompt-text-wrap">
           <span className="prompt-text" dangerouslySetInnerHTML={{__html: boldifyHtml(q.desc)}} />
           {lang === "zh" && q.descZh && (
-            <span className="prompt-text-zh">{q.descZh}</span>
+            <span className="prompt-text-zh" dangerouslySetInnerHTML={{__html: boldifyHtml(q.descZh)}} />
           )}
         </div>
       </div>
