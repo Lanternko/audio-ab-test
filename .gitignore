@@ -3,3 +3,10 @@
 node_modules/
 .vscode/
 .idea/
+
+# macOS Finder duplicates (e.g. "foo 2.wav")
+* [0-9].wav
+* [0-9].json
+
+# Local audio generation staging
+audio_new_v*/
