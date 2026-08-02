@@ -1,0 +1,15 @@
+{
+  "project": "audio_ab_test_stage1_noq_k2_k3_fullscale",
+  "variants": ["stage1", "noq", "k2", "k3"],
+  "round_size": 12,
+  "pool_size": 30,
+  "pair_schedule": "six unordered pairs, each repeated twice per round; A/B randomized",
+  "audio_format": "FLAC, 16-bit mono 16 kHz",
+  "source_protocols": {
+    "stage1": "MusicCaps 5521; FluxAudio FM25; CFG4.5; NoQ; NoMask; S1@400000",
+    "noq": "MusicCaps 5521; MeanFlow1; CFG0.5; NoQ S2@600000",
+    "k2": "MusicCaps 5521; MeanFlow1; CFG0.5; K2 balanced S2@600000",
+    "k3": "MusicCaps 5521; MeanFlow1; CFG0.5; K3 balanced S2@600000"
+  },
+  "matching": "30 clips matched by caption against musiccaps_test.tsv; source IDs are recorded in fullscale_boot.js"
+}

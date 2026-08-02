@@ -246,7 +246,7 @@ function Runner({ state, setState, goto, lang, requestViewResults }) {
   const poolItem = DATA.pool[poolIdx];
   const q = buildQuestion(poolItem, state.currentIdx + 1, aIsV1, DATA.variants);
   const answer = state.answers[q.id] || {};
-  const sideOf = (label) => DATA.variants[0] === label ? "left" : "right";
+  const sideOf = (label) => q.aLabel === label ? "left" : "right";
 
   useEffect(() => {
     const onKey = (e) => {

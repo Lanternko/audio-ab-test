@@ -12,7 +12,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="runner.css" />
-  <link rel="stylesheet" href="overview.css?v=2" />
+  <link rel="stylesheet" href="overview.css?v=3" />
 </head>
 
 <body>
@@ -40,17 +40,19 @@
   </script>
 
   <script src="data.js?v=5"></script>
-  <script type="text/babel" src="runner.jsx?v=5"></script>
+  <script src="fullscale_boot.js?v=1"></script>
+  <script type="text/babel" src="runner.jsx?v=6"></script>
   <script type="text/babel" src="overview.jsx?v=5"></script>
+  <script type="text/babel" src="fullscale_results.jsx?v=1"></script>
 
   <script type="text/babel">
     const { useState, useEffect } = React;
 
     // Schema v3: introduced round sampling (selection + abMap) and
     // per-participant seen tracking so repeat rounds get different clips.
-    const STORAGE_KEY = "audio-ab-test-state-v4";
+    const STORAGE_KEY = "audio-ab-test-state-fullscale-v1";
     const LEGACY_STORAGE_KEYS = ["tonewright-state-v3"];
-    const SEEN_KEY = "audio-ab-test-seen-v4";
+    const SEEN_KEY = "audio-ab-test-seen-fullscale-v1";
     const LEGACY_SEEN_KEYS = ["tonewright-seen-v3"];
     const VALID_DATA_KEYS = new Set([DATA.project, ...(window.LEGACY_PROJECT_KEYS || [])]);
 

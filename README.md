@@ -100,6 +100,22 @@ window.SUBMIT_URL = "<your Apps Script /exec URL>";
 
 The Apps Script writes one row per submission with flattened per-question columns (`q1_aq`, `q1_pf`, ...) plus a `fullJSON` column for archival.
 
+## Full-scale Stage 1 / NoQ / K2 / K3 study
+
+The current `main` build also contains a four-system blind listening study using
+the full-scale MusicCaps outputs:
+
+- Stage 1: 400k-step NoQ checkpoint, evaluated with the Stage 1 protocol
+- NoQ S2: 400k + 200k full baseline
+- K2 balanced S2: 400k + 200k full ablation
+- K3 balanced S2: 400k + 200k full ablation
+
+Each 12-question round contains the six unordered system pairs twice, with the
+A/B side randomized independently. The four labels are hidden until Results.
+The 30 clips are matched by MusicCaps caption and the audio is stored as FLAC
+under `audio/mcNN_{stage1,noq,k2,k3}.flac`. Results keep the standard JSON
+schema and include the four system labels in `variants`.
+
 ## Scale Convention
 
 Positive CMOS = **A preferred**, negative = **B preferred**, `0` = tie.
