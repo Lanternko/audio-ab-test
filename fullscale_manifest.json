@@ -1,15 +1,201 @@
 {
-  "project": "audio_ab_test_stage1_noq_k2_k3_fullscale",
-  "variants": ["stage1", "noq", "k2", "k3"],
+  "project": "audio_ab_test_c20_best_worst_k3_quarter_mf25",
+  "variants": [
+    "c20",
+    "best",
+    "worst",
+    "k3"
+  ],
   "round_size": 12,
   "pool_size": 30,
   "pair_schedule": "six unordered pairs, each repeated twice per round; A/B randomized",
   "audio_format": "FLAC, 16-bit mono 16 kHz",
   "source_protocols": {
-    "stage1": "MusicCaps 5521; FluxAudio FM25; CFG4.5; NoQ; NoMask; S1@400000",
-    "noq": "MusicCaps 5521; MeanFlow1; CFG0.5; NoQ S2@600000",
-    "k2": "MusicCaps 5521; MeanFlow1; CFG0.5; K2 balanced S2@600000",
-    "k3": "MusicCaps 5521; MeanFlow1; CFG0.5; K3 balanced S2@600000"
+    "c20": "Caption 2.0 multisent NoQ quarter S2; MusicCaps MF25 CFG4.5",
+    "best": "Best-of-3 CLAP caption NoQ quarter S2; MusicCaps MF25 CFG4.5",
+    "worst": "Worst-of-3 CLAP caption NoQ quarter S2; MusicCaps MF25 CFG4.5",
+    "k3": "Qwen-3cap MeanSim K=3 balanced quarter S2; infer quality_level=9; MusicCaps MF25 CFG4.5"
   },
-  "matching": "30 clips matched by caption against musiccaps_test.tsv; source IDs are recorded in fullscale_boot.js"
+  "matching": [
+    {
+      "mc": "mc01",
+      "id": "w5qf9O6c20o_30",
+      "j": 1.0,
+      "caption": "An acoustic piano is playing a sad sounding composition while someone is playing a synthesizer lead-sound that sounds like someone crying. You can hear a lot of white noise in the recording. This seems to be an amateur recording. This song may be playing on a TV show."
+    },
+    {
+      "mc": "mc02",
+      "id": "8LP_wbFLaJE_30",
+      "j": 1.0,
+      "caption": "This song contains a digital drums playing a groove that invites to dance along with some percussive sounds. A bass hit sounds is adding rhythmic and harmonic elements along with a short synth lead sound in the higher register. A male voice is shouting/singing with delay on his voice. This song may be playing in a club."
+    },
+    {
+      "mc": "mc03",
+      "id": "0khKvVDyYV4_240",
+      "j": 1.0,
+      "caption": "The low quality recording features an in-game audio recording that features an echoing female exhale sound, shimmering hi hats, claps, shimmering bells melody and groovy bass guitar. In the second half of the loop, the song changes and there is a sweet female vocal humming a melody. It sounds exciting, happy and fun."
+    },
+    {
+      "mc": "mc04",
+      "id": "MIexFfOsuJs_30",
+      "j": 1.0,
+      "caption": "A male singer sings this emotional melody with a female backup singer singing chanting tones. The song is slow tempo with a guitar strumming gently and no other instrumentation. The song is emotional and romantic. The song is beautiful and lilting."
+    },
+    {
+      "mc": "mc05",
+      "id": "JSLqi_TsMzs_0",
+      "j": 1.0,
+      "caption": "The excerpt starts off with 3 bass drum beats after which an explosion and a crumbling sound can be heard. After this, downward sliding strings or a similar instrument in timbre can be heard creating a sort of scary effect. In the background wind sounds can be heard throughout."
+    },
+    {
+      "mc": "mc06",
+      "id": "Hij_QxDkIJI_30",
+      "j": 1.0,
+      "caption": "The Pop song features an echoing synth keys melody that consists of a passionate female vocal singing over punchy kick, synth bells melody, echoing synth keys melody and shimmering hi hats. It sounds emotional and passionate."
+    },
+    {
+      "mc": "mc07",
+      "id": "Ac4M-EkdkDs_220",
+      "j": 1.0,
+      "caption": "The Trap song features a very short snippet of hard 808 bass, shimmering hi hats, punchy snare and synth keys melody after which comes the second part of the loop where there is a wide filtered stuttering down sweep sound effect. It sounds like an interlude in the middle of the song."
+    },
+    {
+      "mc": "mc08",
+      "id": "7NnvEryyYdo_190",
+      "j": 1.0,
+      "caption": "This is a cumbia piece. There is a female vocal singing seductively joined by male back vocals singing in the chorus. The trumpet is playing the main melody joined by the piano and the bass guitar in the background. Latin percussion playing a cumbia beat provides the rhythmic background. The atmosphere of the piece is very playful. The ideal setting for this piece can be a latin dance course."
+    },
+    {
+      "mc": "mc09",
+      "id": "mPaRs96jtFY_30",
+      "j": 1.0,
+      "caption": "The low quality recording features an electric guitar tuning. The recording is gated so every time the guitar string is plucked it is very noisy, while in-between it is a complete silence."
+    },
+    {
+      "mc": "mc10",
+      "id": "6-XEA0zqo8M_50",
+      "j": 1.0,
+      "caption": "The song is an instrumental piece. The song is medium tempo with a steady rhythm, groovy bass line, retro keyboard tones. The song is dance-like and entertaining. The song is a hip hop tune and an amateur production."
+    },
+    {
+      "mc": "mc11",
+      "id": "qxOPhByaK_M_30",
+      "j": 1.0,
+      "caption": "The low quality recording features a sustained string melody, tinny shimmering bells and addictive piano melody, complementing each other. At the very end of the loop there is a short snippet of flat female vocal narrating. At some point during the loop, there is a subtle unwanted low frequency sputter, which definitely makes this recording low quality."
+    },
+    {
+      "mc": "mc12",
+      "id": "_GxqvILlmAw_30",
+      "j": 1.0,
+      "caption": "This is a dubstep piece. The rhythmic background consists of a hard-hitting electronic drum beat. A high-pitched synth is playing the main melody while a choir sample is played in the background for the chords. There is a high energy atmosphere in the piece. It could be played at nightclubs. This piece could also take place in DJ setlists."
+    },
+    {
+      "mc": "mc13",
+      "id": "1KmsVHx7E2c_0",
+      "j": 1.0,
+      "caption": "This is a movie music piece. The music starts playing with a film reel effect. A strings section with cinematic characteristics are playing a dramatic tune while percussive elements resembling a timpani and a big cymbal are playing accentuated hits to put emphasis on this feeling. The atmosphere is epic. There is the aura of a story about to be told in this piece. It could be used in the soundtrack of a documentary, an action or a thriller movie. It could also be used in the soundtrack of a thriller video game."
+    },
+    {
+      "mc": "mc14",
+      "id": "1ArUx6UCxe4_30",
+      "j": 1.0,
+      "caption": "The song is an instrumental with a devilish voice laughing. The tempo is fast with a fast paced drumming rhythm with strong cymbal crashes. The song is probably an adult animated show designed to scare."
+    },
+    {
+      "mc": "mc15",
+      "id": "6_zzu2KON6c_80",
+      "j": 1.0,
+      "caption": "A male guitarist plays a cool guitar like on an electric guitar. The song is medium tempo with a guitar solo with heavy a[echoes played though a guitar amplifier and no other instrumentation. The song is bluesy and passionate. The song is a casual blue slick played on a guitar."
+    },
+    {
+      "mc": "mc16",
+      "id": "HLsRePLObfI_30",
+      "j": 1.0,
+      "caption": "The song is instrumental. The tempo is fast with a beautifully played hand pan arrangement by a soloist. The song is ethereal and innocent in its beauty. The audio quality is average."
+    },
+    {
+      "mc": "mc17",
+      "id": "IQxr3xwAbKk_40",
+      "j": 1.0,
+      "caption": "The low quality recording features a musician practicing bassoon scale. In the background, there is a muffled male vocal. The recording is mono and noisy."
+    },
+    {
+      "mc": "mc18",
+      "id": "hmkPWxTIwwU_30",
+      "j": 1.0,
+      "caption": "This music is an electronic instrumental. The tempo is fast with punchy drumming rhythm, keyboard harmony, vigorous guitar rhythm and electronically arranged sounds like a dissonant booming drum, water bubbling, hissing and  whistle like instrument playing harmony. The song is youthful, energetic, enthusiastic, vigorous, vivacious and youthful with a dance groove. This music is EDM."
+    },
+    {
+      "mc": "mc19",
+      "id": "sEIn8YYD9jw_170",
+      "j": 1.0,
+      "caption": "This song features a harmonica playing the main melody. This is accompanied by percussion playing a simple beat with the focus on the snare. The bass plays the root note of the chord. Due to the low quality of the audio, the other instruments cannot be heard. T."
+    },
+    {
+      "mc": "mc20",
+      "id": "0trWdhSvab4_30",
+      "j": 1.0,
+      "caption": "Male singers sing this vocal harmony. The song is medium fast tempo with a groovy bass line, steady drumming rhythm, piano accompaniment and guitar rhythm. The song is devotional and congregational. The song is a classic Christian praise hit."
+    },
+    {
+      "mc": "mc21",
+      "id": "nyjXFx0GSX8_150",
+      "j": 1.0,
+      "caption": "We hear the bright ringing of two metal objects clanging against each other. This is the bright metallic sound of steel ringing. In the distance, we faintly hear a country rock song. Specifically, we hear a country rock guitar riff being played in the background. There is also the sound of a non-steel object being placed on a surface."
+    },
+    {
+      "mc": "mc22",
+      "id": "FF0VaBxb27w_30",
+      "j": 1.0,
+      "caption": "A male vocalist sings this animated song. The tempo is medium with vocal emphasis, a bright ukelele harmony, groovy bass guitar, rhythmic acoustic guitar and piano accompaniment. The song is emphatic, passionate, jealous, emotional, sentimental and story telling. The song has an orchestral vibe."
+    },
+    {
+      "mc": "mc23",
+      "id": "xMCLKME4hAY_110",
+      "j": 1.0,
+      "caption": "This audio contains someone playing a clean e-guitar melody that sounds soothing. This song may be playing at a little living room concert."
+    },
+    {
+      "mc": "mc24",
+      "id": "mOFyRCMlXIo_330",
+      "j": 1.0,
+      "caption": "This clip brings about the sensation of building up to something. It features an arpeggiated melody on the piano, and timpani drum rolls. The audio quality is low."
+    },
+    {
+      "mc": "mc25",
+      "id": "1yGWdegJjA4_30",
+      "j": 1.0,
+      "caption": "Instrumental electro music with a half time feel in the kick and busy drums. The bass is constantly busy, with resonant filter sweeps for dramatic effect. There are multiple overlapping high synth melodies with big sounding reverb throughout. Perfect for a large outdoor or stadium EDM festival."
+    },
+    {
+      "mc": "mc26",
+      "id": "NlUf1ppoSG4_130",
+      "j": 1.0,
+      "caption": "This music is instrumental , the tempo is slow with an electric guitar lead and a strong bass guitar accompaniment. The music is assertive and emphatic but sounds sad, melancholic,nostalgic, romantic , wistful and sentimental. This music is Blues Harmony."
+    },
+    {
+      "mc": "mc27",
+      "id": "AzhfZ8rNhRk_30",
+      "j": 1.0,
+      "caption": "This is the noise of a fire alarm with rock music faintly playing in the background. The rock music piece has a shouting vocal, electric guitar and drums. The fire alarm makes a very disturbing sound."
+    },
+    {
+      "mc": "mc28",
+      "id": "deIj55UAxeo_30",
+      "j": 1.0,
+      "caption": "This is a rock music piece. The male vocalist is singing melodically in the Spanish language. The keyboard is playing the chords of the song while the electric guitar joins with the occasional fills. There is a relatively quiet bass guitar supporting them in the background. The acoustic drums provide a basic rock beat for the rhythm. It has an easygoing feeling. This piece could be used in a teenage drama taking place in a Spanish-speaking country."
+    },
+    {
+      "mc": "mc29",
+      "id": "Vx_vqfpRdUU_100",
+      "j": 1.0,
+      "caption": "This music is a mellow instrumental. The tempo is medium with a passionate violin harmony and a simple, sharp piano melody with intense bass lines. The overall mood of the music is deep, sad, lonely, melancholic, nostalgic and poignant and yet beautiful and pleasant."
+    },
+    {
+      "mc": "mc30",
+      "id": "6uIOGE36tWo_110",
+      "j": 1.0,
+      "caption": "This audio contains someone playing a melody on a guitar in the midrange while someone else is strumming a melody on a cuatro in a higher key. Someone is playing a tambourine while a clarinet is playing a fast lead melody. This audio may be playing as a live concert."
+    }
+  ]
 }
